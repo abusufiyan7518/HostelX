@@ -1,0 +1,255 @@
+{% extends 'app/base.html' %}
+{% block content %}
+
+<style>
+/* ===== SAME YOUR UI (UNCHANGED) ===== */
+.page{
+    min-height:100vh;
+    padding:30px;
+    color:#fff;
+    font-family:Inter, sans-serif;
+    background:#0a0a0f;
+    position:relative;
+}
+
+.page::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(229,9,20,0.18), transparent 45%),
+        radial-gradient(circle at 80% 70%, rgba(99,102,241,0.12), transparent 50%);
+    z-index:-1;
+}
+
+.page::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.85));
+    z-index:-1;
+}
+
+.header{margin-bottom:24px;}
+.header h2{font-size:28px;font-weight:800;}
+.header span{color:#b3b3b3;font-size:13px;}
+
+.grid{
+    display:grid;
+    grid-template-columns:1.3fr 0.7fr;
+    gap:18px;
+}
+
+.card{
+    background:rgba(20,20,20,0.65);
+    border:1px solid rgba(255,255,255,0.06);
+    border-radius:18px;
+    padding:22px;
+    backdrop-filter:blur(18px);
+}
+
+.kpi{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+    margin-top:16px;
+}
+
+.kpi-box{
+    padding:16px;
+    border-radius:14px;
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.06);
+}
+
+.badge{
+    display:inline-block;
+    margin-top:10px;
+    padding:5px 10px;
+    font-size:11px;
+    border-radius:999px;
+    font-weight:700;
+}
+
+.success{background:rgba(34,197,94,0.15);color:#22c55e;}
+.warning{background:rgba(245,158,11,0.15);color:#fbbf24;}
+.danger{background:rgba(229,9,20,0.15);color:#e50914;}
+
+.progress{
+    height:10px;
+    background:#1a1a1a;
+    border-radius:999px;
+    overflow:hidden;
+    margin-top:14px;
+}
+
+.progress-fill{
+    height:100%;
+    background:linear-gradient(90deg,#e50914,#22c55e);
+}
+
+.btn{
+    width:100%;
+    margin-top:16px;
+    padding:12px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(135deg,#e50914,#7c3aed);
+    color:white;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.tx{
+    padding:14px;
+    border-radius:14px;
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.06);
+    margin-bottom:10px;
+}
+</style>
+
+<div class="page">
+
+    <div class="header">
+        <h2>💳 HostelX Billing Panel</h2>
+        <span>Secure payments • Real-time tracking</span>
+    </div>
+
+    <div class="grid">
+
+        <!-- LEFT -->
+        <div class="card">
+
+            <h3>Account Overview</h3>
+
+            <div class="kpi">
+                <div class="kpi-box">
+                    <h4>Total Fee</h4>
+                    <p>₹{{ total_fee }}</p>
+                </div>
+
+                <div class="kpi-box">
+                    <h4>Paid</h4>
+                    <p>₹{{ paid_amount }}</p>
+                </div>
+
+                <div class="kpi-box">
+                    <h4>Remaining</h4>
+                    <p>₹{{ remaining }}</p>
+                </div>
+            </div>
+
+            <div class="progress">
+                <div class="progress-fill" style="width:{{ percent }}%"></div>
+            </div>
+
+            <button class="btn" onclick="payNow()">Pay Now</button>
+
+        </div>
+
+        <!-- RIGHT -->
+        <div class="card">
+
+            <h3>Payment Activity</h3>
+
+            <div style="margin-top:14px;">
+                {% for p in payments %}
+
+                <div class="tx">
+
+                    <b>₹{{ p.amount }}</b> • {{ p.method }}
+
+                    {% if p.status == "SUCCESS" %}
+                        <span class="badge success">SUCCESS</span>
+                    {% elif p.status == "FAILED" %}
+                        <span class="badge danger">FAILED</span>
+                    {% else %}
+                        <span class="badge warning">PENDING</span>
+                    {% endif %}
+
+                    <br>
+                    <small>{{ p.created_at }}</small>
+
+                    <!-- 🔥 DOWNLOAD BUTTON -->
+                    <br>
+                    <a href="{% url 'download_invoice' p.id %}" target="_blank" style="
+                    font-size:11px;
+                    color:#22c55e;
+                    text-decoration:none;
+                    display:inline-block;
+                    margin-top:6px;
+                    ">
+                    ⬇ Download Invoice
+                    </a>
+
+                </div>
+
+                {% empty %}
+                <p style="color:#999;">No transactions yet</p>
+                {% endfor %}
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+
+// ✅ MAX PAYMENT LIMIT FROM BACKEND
+const remainingAmount = {{ remaining|default:0 }};
+
+function payNow(){
+
+    let amount = prompt("Enter amount (Max ₹" + remainingAmount + ")");
+
+    if (!amount || isNaN(amount) || amount <= 0){
+        alert("❌ Invalid amount");
+        return;
+    }
+
+    // ✅ FRONTEND BLOCK
+    if (parseInt(amount) > remainingAmount){
+        alert("⚠️ You can only pay up to ₹" + remainingAmount);
+        return;
+    }
+
+    fetch("/create-order/", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: "amount=" + amount
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        // ✅ BACKEND VALIDATION ERROR
+        if (data.error){
+            alert("⚠️ " + data.error);
+            return;
+        }
+
+        const options = {
+            key: data.key,
+            amount: data.amount,
+            currency: "INR",
+            name: "HostelX Payment",
+            description: "Fee Payment",
+            order_id: data.order_id,
+            callback_url: window.location.origin + "/payment-success/",
+            redirect: true,
+            theme: { color: "#e50914" }
+        };
+
+        new Razorpay(options).open();
+    });
+}
+</script>
+
+{% endblock %}

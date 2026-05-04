@@ -1,0 +1,306 @@
+{% extends 'app/base.html' %}
+{% block content %}
+
+<style>
+
+/* ================= THEME ================= */
+:root{
+    --bg:#05070f;
+    --panel:rgba(17,24,39,0.6);
+    --stroke:rgba(255,255,255,0.06);
+    --text:#e5e7eb;
+    --muted:#94a3b8;
+    --netflix:#e50914;
+    --green:#22c55e;
+    --yellow:#fbbf24;
+    --red:#ef4444;
+}
+
+/* ================= BASE ================= */
+.page{
+    padding:30px;
+    max-width:1200px;
+    margin:auto;
+    color:var(--text);
+    font-family:Inter, system-ui;
+    background:var(--bg);
+}
+
+.page::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(229,9,20,0.18), transparent 45%),
+        radial-gradient(circle at 80% 80%, rgba(99,102,241,0.15), transparent 50%);
+    z-index:-1;
+}
+
+/* ================= HEADER ================= */
+.header{
+    margin-bottom:24px;
+}
+
+.header h2{
+    font-size:28px;
+    font-weight:700;
+}
+
+.header p{
+    font-size:13px;
+    color:var(--muted);
+}
+
+/* ================= GRID ================= */
+.grid{
+    display:grid;
+    grid-template-columns:1fr 1.2fr;
+    gap:18px;
+}
+
+/* ================= CARD ================= */
+.card{
+    background:var(--panel);
+    border:1px solid var(--stroke);
+    border-radius:18px;
+    padding:22px;
+    backdrop-filter:blur(16px);
+    transition:0.25s;
+}
+
+.card:hover{
+    transform:translateY(-5px);
+    border-color:var(--netflix);
+}
+
+/* ================= LEFT PANEL ================= */
+.panel-title{
+    font-size:12px;
+    color:var(--muted);
+    letter-spacing:1px;
+    margin-bottom:14px;
+}
+
+.current{
+    font-size:13px;
+    color:var(--muted);
+    margin-bottom:14px;
+}
+
+.current b{
+    color:#fff;
+}
+
+/* INPUTS (Netflix SaaS form style) */
+input, textarea{
+    width:100%;
+    padding:12px;
+    border-radius:12px;
+    border:1px solid var(--stroke);
+    background:#0f172a;
+    color:var(--text);
+    margin-bottom:14px;
+    outline:none;
+    transition:0.2s;
+}
+
+input:focus, textarea:focus{
+    border-color:var(--netflix);
+    box-shadow:0 0 0 3px rgba(229,9,20,0.15);
+}
+
+textarea{
+    height:110px;
+    resize:none;
+}
+
+/* BUTTON (Netflix red SaaS CTA) */
+button{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(135deg,#e50914,#7c3aed);
+    color:white;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+button:hover{
+    transform:translateY(-2px);
+    background:#b20710;
+    box-shadow:0 15px 35px rgba(229,9,20,0.25);
+}
+
+/* ================= FEED (NETFLIX LIST) ================= */
+.feed-title{
+    font-size:12px;
+    color:var(--muted);
+    letter-spacing:1px;
+    margin-bottom:14px;
+}
+
+.request{
+    position:relative;
+    padding:16px;
+    border-radius:14px;
+    background:rgba(255,255,255,0.03);
+    border:1px solid var(--stroke);
+    margin-bottom:12px;
+    transition:0.25s;
+}
+
+.request:hover{
+    transform:scale(1.02);
+    border-color:var(--netflix);
+    background:rgba(229,9,20,0.06);
+}
+
+/* LEFT STRIP (Netflix status bar) */
+.request::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:0;
+    bottom:0;
+    width:3px;
+}
+
+.pending::before{background:var(--yellow);}
+.approved::before{background:var(--green);}
+.rejected::before{background:var(--red);}
+
+/* TOP ROW */
+.req-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+/* ROUTE */
+.route{
+    font-size:14px;
+    font-weight:600;
+}
+
+/* BADGES */
+.tag{
+    font-size:11px;
+    padding:4px 10px;
+    border-radius:999px;
+    font-weight:600;
+}
+
+.pending{background:rgba(251,191,36,0.15); color:var(--yellow);}
+.approved{background:rgba(34,197,94,0.15); color:var(--green);}
+.rejected{background:rgba(239,68,68,0.15); color:var(--red);}
+
+/* DESCRIPTION */
+.meta{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:6px;
+}
+
+/* EMPTY */
+.empty{
+    text-align:center;
+    padding:40px;
+    color:var(--muted);
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+    .grid{
+        grid-template-columns:1fr;
+    }
+}
+
+</style>
+
+<div class="page">
+
+    <div class="header">
+        <h2>🔁 Room Transfer Control Center</h2>
+        <p>HostelX workflow tracking for hostel room moves</p>
+    </div>
+
+    {% if student %}
+
+    <div class="grid">
+
+        <!-- LEFT PANEL -->
+        <div class="card">
+
+            <div class="panel-title">NEW TRANSFER REQUEST</div>
+
+            <div class="current">
+                Current Room:
+                <b>
+                {% if student.room %}
+                    {{ student.room.room_number }}
+                {% else %}
+                    Not Assigned
+                {% endif %}
+                </b>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <input name="requested_room" placeholder="Requested Room" required>
+
+                <textarea name="reason" placeholder="Why do you want to move?" required></textarea>
+
+                <button type="submit">Submit Request</button>
+            </form>
+
+        </div>
+
+        <!-- RIGHT FEED -->
+        <div class="card">
+
+            <div class="feed-title">REQUEST TIMELINE</div>
+
+            {% for t in data %}
+
+            <div class="request {% if t.status == 'Pending' %}pending
+                {% elif t.status == 'Approved' %}approved
+                {% else %}rejected{% endif %}">
+
+                <div class="req-top">
+
+                    <div class="route">
+                        {{ t.current_room }} → {{ t.requested_room }}
+                    </div>
+
+                    <span class="tag {% if t.status == 'Pending' %}pending
+                        {% elif t.status == 'Approved' %}approved
+                        {% else %}rejected{% endif %}">
+                        {{ t.status }}
+                    </span>
+
+                </div>
+
+                <div class="meta">
+                    {{ t.reason|truncatechars:90 }}
+                </div>
+
+            </div>
+
+            {% empty %}
+                <div class="empty">No transfer activity yet</div>
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    {% else %}
+        <div class="card">Student not found</div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

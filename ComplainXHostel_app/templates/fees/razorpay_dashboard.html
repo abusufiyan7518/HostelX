@@ -1,0 +1,263 @@
+{% extends 'app/base.html' %}
+{% block content %}
+
+<style>
+
+.page{
+    min-height:100vh;
+    background:#0a0f1c;
+    padding:28px;
+    color:#e5e7eb;
+    font-family:Inter;
+}
+
+/* HEADER */
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.header h2{
+    font-size:22px;
+    font-weight:700;
+}
+
+/* GRID */
+.grid{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:18px;
+}
+
+/* CARD */
+.card{
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:16px;
+    padding:20px;
+    backdrop-filter: blur(12px);
+}
+
+/* KPI */
+.kpi{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+    margin-top:12px;
+}
+
+.kpi-box{
+    padding:16px;
+    border-radius:14px;
+    background:#0f172a;
+    border:1px solid rgba(255,255,255,0.06);
+    transition:0.2s;
+}
+
+.kpi-box:hover{
+    transform:translateY(-3px);
+    border-color:#6366f1;
+}
+
+.kpi-box h4{
+    font-size:12px;
+    color:#94a3b8;
+}
+
+.kpi-box p{
+    font-size:18px;
+    font-weight:700;
+    margin-top:6px;
+}
+
+/* PROGRESS */
+.progress{
+    height:10px;
+    background:#111827;
+    border-radius:999px;
+    margin-top:14px;
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,0.06);
+}
+
+.progress-fill{
+    height:100%;
+    background:linear-gradient(90deg,#6366f1,#22c55e);
+    transition:0.6s ease;
+}
+
+/* BUTTON */
+.btn{
+    margin-top:14px;
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(135deg,#6366f1,#8b5cf6);
+    color:white;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.btn:hover{
+    transform:translateY(-2px);
+}
+
+/* TRANSACTION CARD */
+.tx{
+    padding:14px;
+    border-radius:12px;
+    background:#0f172a;
+    border:1px solid rgba(255,255,255,0.06);
+    margin-bottom:10px;
+    transition:0.2s;
+}
+
+.tx:hover{
+    transform:translateX(4px);
+    border-color:#6366f1;
+}
+
+/* STATUS */
+.status{
+    font-size:11px;
+    padding:4px 10px;
+    border-radius:999px;
+    float:right;
+}
+
+.success{background:rgba(34,197,94,0.15); color:#22c55e;}
+.pending{background:rgba(245,158,11,0.15); color:#fbbf24;}
+
+/* LIVE INDICATOR */
+.live{
+    font-size:11px;
+    color:#22c55e;
+    display:flex;
+    align-items:center;
+    gap:6px;
+}
+
+.dot{
+    width:6px;
+    height:6px;
+    background:#22c55e;
+    border-radius:50%;
+    animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+    0%{transform:scale(1); opacity:1;}
+    50%{transform:scale(1.6); opacity:0.4;}
+    100%{transform:scale(1); opacity:1;}
+}
+
+</style>
+
+<div class="page">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h2>💳 Billing Dashboard</h2>
+
+        <div class="live">
+            <span class="dot"></span>
+            LIVE
+        </div>
+    </div>
+
+    <div class="grid">
+
+        <!-- LEFT -->
+        <div class="card">
+
+            <h3>Account Overview</h3>
+
+            <div class="kpi">
+
+                <div class="kpi-box">
+                    <h4>Total Fee</h4>
+                    <p>₹{{ total_fee }}</p>
+                </div>
+
+                <div class="kpi-box">
+                    <h4>Paid</h4>
+                    <p>₹{{ paid_amount }}</p>
+                </div>
+
+                <div class="kpi-box">
+                    <h4>Pending</h4>
+                    <p>₹{{ pending_amount }}</p>
+                </div>
+
+            </div>
+
+            <div class="progress">
+                <div class="progress-fill" style="width:{{ percent }}%"></div>
+            </div>
+
+            <p style="margin-top:6px;font-size:12px;color:#94a3b8;">
+                {{ percent }}% completed
+            </p>
+
+            <button class="btn" onclick="payNow()">💳 Pay Now</button>
+
+        </div>
+
+        <!-- RIGHT -->
+        <div class="card">
+
+            <h3>Transaction Feed</h3>
+
+            <div style="margin-top:12px;">
+                {% for p in payments %}
+
+                    <div class="tx">
+
+                        <b>₹{{ p.amount }}</b>
+
+                        {% if p.status == "SUCCESS" %}
+                            <span class="status success">SUCCESS</span>
+                        {% else %}
+                            <span class="status pending">PENDING</span>
+                        {% endif %}
+
+                        <br>
+                        <small style="color:#94a3b8;">{{ p.created_at }}</small>
+
+                    </div>
+
+                {% empty %}
+                    <p style="color:#94a3b8;">No transactions yet</p>
+                {% endfor %}
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- NO FULL PAGE RELOAD (IMPORTANT) -->
+<script>
+setInterval(async () => {
+
+    try {
+        const res = await fetch(window.location.href, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        });
+
+        // optional: you can later replace only TX section via DOM update
+        console.log("sync ok");
+
+    } catch (e) {
+        console.log("sync failed");
+    }
+
+}, 10000);
+</script>
+
+{% endblock %}

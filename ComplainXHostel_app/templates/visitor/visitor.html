@@ -1,0 +1,316 @@
+{% extends 'app/base.html' %}
+{% block content %}
+
+<style>
+
+/* ================= NETFLIX BASE ================= */
+.visitor-page{
+    min-height:100vh;
+    padding:28px;
+    font-family:Inter, sans-serif;
+    background:#0b0f1a;
+    color:#e5e7eb;
+    position:relative;
+    overflow:hidden;
+}
+
+/* cinematic glow background */
+.visitor-page::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(229,9,20,0.18), transparent 45%),
+        radial-gradient(circle at 85% 70%, rgba(99,102,241,0.15), transparent 50%);
+    z-index:-1;
+    pointer-events:none;
+}
+
+/* ================= HEADER ================= */
+.header{
+    margin-bottom:22px;
+}
+
+.header h2{
+    font-size:28px;
+    font-weight:800;
+    letter-spacing:-0.5px;
+}
+
+.header p{
+    font-size:13px;
+    color:#94a3b8;
+}
+
+/* ================= KPI STRIP (NETFLIX STYLE) ================= */
+.kpi{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+    margin-bottom:18px;
+}
+
+.kpi-card{
+    padding:16px;
+    border-radius:16px;
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.08);
+    backdrop-filter:blur(12px);
+    transition:0.3s;
+}
+
+.kpi-card:hover{
+    transform:translateY(-4px);
+    border-color:#e50914;
+    box-shadow:0 20px 40px rgba(0,0,0,0.5);
+}
+
+.kpi-card h4{
+    font-size:11px;
+    color:#94a3b8;
+}
+
+.kpi-card h2{
+    font-size:22px;
+    margin-top:6px;
+}
+
+/* ================= LAYOUT ================= */
+.grid{
+    display:grid;
+    grid-template-columns:1fr 1.2fr;
+    gap:18px;
+}
+
+/* ================= GLASS CARD ================= */
+.card{
+    background:rgba(17,24,39,0.55);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:18px;
+    padding:20px;
+    backdrop-filter:blur(14px);
+    transition:0.3s;
+}
+
+.card:hover{
+    transform:translateY(-6px);
+    border-color:#e50914;
+}
+
+/* ================= FORM ================= */
+input{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,0.1);
+    background:#0f172a;
+    color:white;
+    outline:none;
+    transition:0.2s;
+}
+
+input:focus{
+    border-color:#e50914;
+    box-shadow:0 0 0 3px rgba(229,9,20,0.2);
+}
+
+button{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:12px;
+    margin-top:14px;
+    background:linear-gradient(135deg,#e50914,#7c3aed);
+    color:white;
+    font-weight:700;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+button:hover{
+    transform:translateY(-2px);
+    background:#b20710;
+    box-shadow:0 15px 30px rgba(229,9,20,0.3);
+}
+
+/* ================= VISITOR CARD (NETFLIX LIST ITEM) ================= */
+.visitor-card{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:14px;
+    margin-top:10px;
+    border-radius:14px;
+
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.06);
+
+    transition:0.25s;
+    position:relative;
+    overflow:hidden;
+}
+
+.visitor-card::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:0;
+    bottom:0;
+    width:3px;
+    background:#e50914;
+    opacity:0;
+    transition:0.3s;
+}
+
+.visitor-card:hover::before{
+    opacity:1;
+}
+
+.visitor-card:hover{
+    transform:scale(1.02);
+    border-color:#e50914;
+    background:rgba(229,9,20,0.06);
+}
+
+/* ================= BADGES ================= */
+.badge{
+    padding:5px 10px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:700;
+}
+
+.pending{
+    background:rgba(245,158,11,0.15);
+    color:#fbbf24;
+}
+
+.approved{
+    background:rgba(34,197,94,0.15);
+    color:#22c55e;
+}
+
+.rejected{
+    background:rgba(239,68,68,0.15);
+    color:#ef4444;
+}
+
+/* ================= EMPTY ================= */
+.empty{
+    text-align:center;
+    padding:20px;
+    color:#64748b;
+}
+
+/* ================= RESPONSIVE ================= */
+@media(max-width:900px){
+    .grid{
+        grid-template-columns:1fr;
+    }
+    .kpi{
+        grid-template-columns:1fr;
+    }
+}
+
+</style>
+
+<div class="visitor-page">
+
+<div class="container">
+
+    <div class="header">
+        <h2>👥 Visitor Control Center</h2>
+        <p>HostelX approval workflow system</p>
+    </div>
+
+    <!-- KPI -->
+    <div class="kpi">
+
+        <div class="kpi-card">
+            <h4>Total Requests</h4>
+            <h2>{{ data|length }}</h2>
+        </div>
+
+        <div class="kpi-card">
+            <h4>Pending</h4>
+            <h2>{{ pending_count }}</h2>
+        </div>
+
+        <div class="kpi-card">
+            <h4>Approved</h4>
+            <h2>{{ approved_count }}</h2>
+        </div>
+
+    </div>
+
+    {% if student %}
+
+    <div class="grid">
+
+        <!-- FORM -->
+        <div class="card">
+
+            <h3>➕ New Visitor Request</h3>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <input name="name" placeholder="Visitor Name" required>
+                <input name="relation" placeholder="Relation" required>
+                <input name="contact" placeholder="Contact" required>
+                <input type="file" name="id_proof" required>
+
+                <button type="submit">Send Request</button>
+            </form>
+
+        </div>
+
+        <!-- LIST -->
+        <div class="card">
+
+            <h3>📋 Request Timeline</h3>
+
+            {% for v in data %}
+
+            <div class="visitor-card">
+
+                <div>
+                    <b>{{ v.name }}</b><br>
+                    <small style="color:#94a3b8;">
+                        {{ v.relation }} • {{ v.contact }}
+                    </small>
+                </div>
+
+                <span class="badge 
+                    {% if v.status == 'Pending' %}pending
+                    {% elif v.status == 'Approved' %}approved
+                    {% else %}rejected{% endif %}">
+                    {{ v.status }}
+                </span>
+
+            </div>
+
+            {% empty %}
+                <div class="empty">No visitor requests yet</div>
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    {% else %}
+
+    <div class="card">
+        <p style="color:#f87171;">
+            Student not linked. Please check user mapping.
+        </p>
+    </div>
+
+    {% endif %}
+
+</div>
+
+</div>
+
+{% endblock %}

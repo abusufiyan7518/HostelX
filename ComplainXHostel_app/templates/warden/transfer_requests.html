@@ -1,0 +1,528 @@
+{% extends 'warden/base.html' %}
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+/* ===================== NETFLIX BASE ===================== */
+body{
+    background:#050814;
+    color:#e5e7eb;
+    font-family:Inter, sans-serif;
+}
+
+/* cinematic background */
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(229,9,20,0.14), transparent 40%),
+        radial-gradient(circle at 80% 30%, rgba(99,102,241,0.18), transparent 45%),
+        radial-gradient(circle at 50% 80%, rgba(34,197,94,0.10), transparent 50%);
+    z-index:-1;
+}
+
+/* grid overlay */
+body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size:70px 70px;
+    opacity:0.06;
+    z-index:-1;
+}
+
+/* ===================== PAGE ===================== */
+.page{
+    padding:24px;
+    color:#e5e7eb;
+    max-width:1300px;
+    margin:auto;
+}
+
+/* HEADER */
+.header{
+    margin-bottom:18px;
+}
+
+.header h2{
+    font-size:26px;
+    font-weight:700;
+}
+
+.header p{
+    color:#94a3b8;
+    font-size:13px;
+    margin-top:4px;
+}
+
+/* ================= STATS ================= */
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+    margin-bottom:22px;
+}
+
+.stat{
+    background:rgba(17,24,39,0.65);
+    padding:16px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,0.08);
+    text-align:center;
+    transition:0.25s;
+    backdrop-filter:blur(14px);
+}
+
+.stat:hover{
+    transform:translateY(-5px);
+    border-color:#e50914;
+    box-shadow:0 20px 50px rgba(229,9,20,0.15);
+}
+
+/* ================= CHARTS ================= */
+.charts{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:14px;
+    margin-bottom:22px;
+}
+
+.box{
+    background:rgba(17,24,39,0.65);
+    padding:16px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,0.08);
+    backdrop-filter:blur(14px);
+    min-height:260px;
+}
+
+/* SEARCH BAR */
+.search{
+    width:100%;
+    padding:12px;
+    border-radius:12px;
+    background:#0f172a;
+    color:white;
+    border:1px solid rgba(255,255,255,0.1);
+    margin-bottom:18px;
+    transition:0.2s;
+    outline:none;
+}
+
+.search:focus{
+    border-color:#e50914;
+    box-shadow:0 0 0 3px rgba(229,9,20,0.2);
+}
+
+/* ===================== GLASS TABLE ===================== */
+.table-card{
+    background:rgba(17,24,39,0.65);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:18px;
+    padding:16px;
+    backdrop-filter:blur(16px);
+    overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+
+/* TABLE */
+table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+}
+
+th{
+    text-align:left;
+    padding:14px 10px;
+    color:#94a3b8;
+    font-weight:500;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    font-size:11px;
+}
+
+td{
+    padding:14px 10px;
+    border-bottom:1px solid rgba(255,255,255,0.05);
+    vertical-align:middle;
+    transition:0.2s;
+}
+
+/* NETFLIX ROW HOVER */
+tr:hover td{
+    background:rgba(99,102,241,0.08);
+}
+
+/* ===================== USER ===================== */
+.user{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.avatar{
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    overflow:hidden;
+    background:linear-gradient(135deg,#e50914,#6366f1);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-weight:600;
+    box-shadow:0 8px 20px rgba(229,9,20,0.3);
+}
+
+.avatar-img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.name{
+    font-size:14px;
+}
+
+/* ===================== NETFLIX BADGES ===================== */
+.badge{
+    padding:5px 12px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:600;
+    display:inline-block;
+    backdrop-filter:blur(8px);
+}
+
+.pending{
+    background:rgba(245,158,11,0.15);
+    color:#fbbf24;
+    border:1px solid rgba(245,158,11,0.3);
+}
+
+.approved{
+    background:rgba(34,197,94,0.15);
+    color:#22c55e;
+    border:1px solid rgba(34,197,94,0.3);
+}
+
+.rejected{
+    background:rgba(239,68,68,0.15);
+    color:#ef4444;
+    border:1px solid rgba(239,68,68,0.3);
+}
+
+/* ===================== REASON ===================== */
+.reason{
+    color:#cbd5e1;
+    font-size:12px;
+    max-width:260px;
+    line-height:1.4;
+}
+
+/* ===================== ACTIONS ===================== */
+.actions{
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
+
+/* BUTTONS */
+.btn{
+    padding:6px 10px;
+    border-radius:10px;
+    font-size:12px;
+    text-decoration:none;
+    font-weight:600;
+    transition:0.2s;
+    display:inline-block;
+}
+
+.btn:hover{
+    transform:translateY(-2px);
+}
+
+.approve{
+    background:linear-gradient(135deg,#22c55e,#16a34a);
+    color:white;
+}
+
+.reject{
+    background:linear-gradient(135deg,#e50914,#b91c1c);
+    color:white;
+}
+
+/* DISABLED */
+.disabled{
+    font-size:12px;
+    color:#94a3b8;
+    background:rgba(255,255,255,0.04);
+    padding:6px 10px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.08);
+}
+
+/* STATUS CHIP */
+.status-chip{
+    padding:5px 10px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:600;
+}
+
+/* EMPTY */
+.empty{
+    text-align:center;
+    padding:20px;
+    color:#64748b;
+}
+
+@media(max-width:900px){
+    .stats, .charts{
+        grid-template-columns:1fr;
+    }
+}
+
+</style>
+
+<div class="page">
+
+    <div class="header">
+        <h2>🔁 Room Transfer Requests</h2>
+        <p>Room transfer request approval pipeline</p>
+    </div>
+
+    <div class="stats">
+        <div class="stat"><b>Total</b><br><span id="total-count" style="font-size: 20px; font-weight: 600; color: #fff;">0</span></div>
+        <div class="stat"><b>Pending</b><br><span id="pending-count" style="font-size: 20px; font-weight: 600; color: #fbbf24;">0</span></div>
+        <div class="stat"><b>Approved</b><br><span id="approved-count" style="font-size: 20px; font-weight: 600; color: #22c55e;">0</span></div>
+        <div class="stat"><b>Rejected</b><br><span id="rejected-count" style="font-size: 20px; font-weight: 600; color: #ef4444;">0</span></div>
+    </div>
+
+    <div class="charts">
+        <div class="box">
+            <h4 style="color:#94a3b8; margin-bottom:12px; font-size:12px; font-weight: 500;">Requests by Current Rooms</h4>
+            <div style="height:190px;">
+                <canvas id="roomChart"></canvas>
+            </div>
+        </div>
+        <div class="box">
+            <h4 style="color:#94a3b8; margin-bottom:12px; font-size:12px; font-weight: 500;">Status Breakdown</h4>
+            <div style="height:190px;">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <input class="search" id="searchInput" placeholder="Search by student, current/requested room...">
+
+    <div class="table-card">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Current</th>
+                    <th>Requested</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+            {% for t in data %}
+            <tr class="request-row">
+
+                <td>
+                    <div class="user">
+                        <div class="avatar">
+                            {% if t.student.profile_pic %}
+                                <img src="{{ t.student.profile_pic.url }}" class="avatar-img">
+                            {% else %}
+                                {{ t.student.user.username|first|upper }}
+                            {% endif %}
+                        </div>
+                        {{ t.student.user.username }}
+                    </div>
+                </td>
+
+                <td class="current-room">{{ t.current_room }}</td>
+
+                <td>
+                    <b style="color:#cbd5e1;">{{ t.requested_room }}</b>
+                </td>
+
+                <td>
+                    <div class="reason">
+                        {{ t.reason|default:"No reason provided" }}
+                    </div>
+                </td>
+
+                <td>
+                    {% if t.status == "Pending" %}
+                        <span class="status-chip pending">Pending</span>
+                    {% elif t.status == "Approved" %}
+                        <span class="status-chip approved">Approved</span>
+                    {% else %}
+                        <span class="status-chip rejected">Rejected</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if t.status == "Pending" %}
+                        <div class="actions">
+                            <a href="{% url 'approve_transfer' t.id %}" class="btn approve">Approve</a>
+                            <a href="{% url 'reject_transfer' t.id %}" class="btn reject">Reject</a>
+                        </div>
+                    {% elif t.status == "Approved" %}
+                        <span class="disabled">Approved ✓</span>
+                    {% else %}
+                        <span class="disabled">Rejected ✕</span>
+                    {% endif %}
+                </td>
+
+            </tr>
+
+            {% empty %}
+            <tr>
+                <td colspan="6" class="empty">No transfer requests found</td>
+            </tr>
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<script>
+
+// Search & Filter
+document.getElementById("searchInput").addEventListener("input", function(){
+    let val = this.value.toLowerCase();
+    document.querySelectorAll(".request-row").forEach(row=>{
+        row.style.display = row.innerText.toLowerCase().includes(val) ? "" : "none";
+    });
+});
+
+function getTableStatistics() {
+    let pending = 0, approved = 0, rejected = 0;
+    let rooms = {};
+
+    document.querySelectorAll(".request-row").forEach(row => {
+        // Status Check
+        let statusEl = row.querySelector(".status-chip");
+        if(statusEl) {
+            let statusText = statusEl.innerText.toLowerCase();
+            if(statusText.includes("pending")) pending++;
+            else if(statusText.includes("approved")) approved++;
+            else if(statusText.includes("rejected")) rejected++;
+        }
+
+        // Current Room Check
+        let currentRoomEl = row.querySelector(".current-room");
+        if (currentRoomEl) {
+            let roomText = currentRoomEl.innerText.trim();
+            if (roomText) {
+                rooms[roomText] = (rooms[roomText] || 0) + 1;
+            }
+        }
+    });
+
+    return {
+        status: { pending, approved, rejected },
+        rooms: rooms
+    };
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    let stats = getTableStatistics();
+    let totalRequests = stats.status.pending + stats.status.approved + stats.status.rejected;
+
+    document.getElementById("total-count").innerText = totalRequests;
+    document.getElementById("pending-count").innerText = stats.status.pending;
+    document.getElementById("approved-count").innerText = stats.status.approved;
+    document.getElementById("rejected-count").innerText = stats.status.rejected;
+
+    // Room Chart Data (Sorted by top rooms)
+    let sortedRooms = Object.entries(stats.rooms).sort((a,b) => b[1] - a[1]).slice(0, 7);
+    let roomLabels = sortedRooms.map(item => "Room " + item[0]);
+    let roomCounts = sortedRooms.map(item => item[1]);
+
+    // Trend Chart (Rooms)
+    new Chart(document.getElementById("roomChart"), {
+        type: 'bar',
+        data: {
+            labels: roomLabels.length > 0 ? roomLabels : ['No Requests'],
+            datasets: [{
+                label: 'Requests by Room',
+                data: roomCounts.length > 0 ? roomCounts : [0],
+                backgroundColor: 'rgba(229, 9, 20, 0.25)',
+                borderColor: '#e50914',
+                borderWidth: 2,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: '#94a3b8', stepSize: 1 },
+                    grid: { color: 'rgba(255, 255, 255, 0.04)' }
+                },
+                x: {
+                    ticks: { color: '#94a3b8' },
+                    grid: { display: false }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: { color: '#94a3b8', font: { size: 11 } }
+                }
+            }
+        }
+    });
+
+    // Doughnut Chart (Status Breakdown)
+    new Chart(document.getElementById("statusChart"), {
+        type: 'doughnut',
+        data: {
+            labels: ['Pending', 'Approved', 'Rejected'],
+            datasets: [{
+                data: [stats.status.pending, stats.status.approved, stats.status.rejected],
+                backgroundColor: ['#fbbf24', '#22c55e', '#ef4444'],
+                borderColor: '#050814',
+                borderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#94a3b8', font: { size: 11 } }
+                }
+            }
+        }
+    });
+});
+
+</script>
+
+{% endblock %}

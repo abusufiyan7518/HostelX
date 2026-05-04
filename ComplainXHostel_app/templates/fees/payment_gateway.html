@@ -1,0 +1,139 @@
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<button onclick="payNow()" class="pay-btn">
+    💳 Pay Now
+</button>
+
+<style>
+.pay-btn{
+    padding:12px 18px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(135deg,#6366f1,#4f46e5);
+    color:white;
+    font-weight:600;
+    cursor:pointer;
+}
+</style>
+
+<script>
+
+function payNow() {
+
+    let amount = prompt("Enter amount");
+
+    if (!amount || isNaN(amount)) {
+        alert("Invalid amount");
+        return;
+    }
+
+    fetch("/create-order/", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: "amount=" + amount
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("Network response failed: " + res.status);
+        return res.json();
+    })
+    .then(data => {
+
+        if (!data.order_id) {
+            alert("Order creation failed: " + (data.error || "Unknown error"));
+            return;
+        }
+
+        const options = {
+            key: data.key,
+            amount: data.amount,
+            currency: "INR",
+            name: "Hostel SaaS",
+            description: "Fee Payment",
+            order_id: data.order_id,
+
+            handler: function (response) {
+                console.log("✅ Payment handler called with response:", response);
+
+                fetch("/payment-success/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify(response)
+                })
+                .then(res => {
+                    console.log("📡 Response status:", res.status, res.ok);
+                    if (!res.ok) {
+                        return res.text().then(text => {
+                            throw new Error(`HTTP ${res.status}: ${text}`);
+                        });
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    console.log("📦 Server response:", data);
+
+                    if (data.status === "success") {
+                        alert("✅ Payment Successful 🎉\nAmount has been credited to your account.");
+                        window.location.href = "/fee-status/";
+                    } else {
+                        alert("❌ Payment Verification Failed\n" + (data.error || "Please try again"));
+                    }
+
+                })
+                .catch(err => {
+                    console.error("❌ Payment verification error:", err);
+                    alert("⚠️ Error: " + err.message + "\n\nPlease check console (F12) for details.");
+                });
+
+            },
+
+            modal: {
+                ondismiss: function () {
+                    console.log("Payment cancelled by user");
+                }
+            },
+
+            theme: {
+                color: "#e50914"
+            },
+
+            prefill: {
+                email: "{{ user.email }}",
+                contact: ""
+            }
+        };
+
+        try {
+            const rzp = new Razorpay(options);
+
+            rzp.on("payment.failed", function (response) {
+                console.error("❌ Payment failed event triggered:", response);
+                alert("Payment Failed ❌\nError: " + (response.error?.description || response.error?.code || "Unknown error"));
+                window.location.href = "/fee-status/";
+            });
+
+            rzp.on("payment.success", function (response) {
+                console.log("✅ Payment success event triggered:", response);
+            });
+
+            console.log("🎯 Opening Razorpay checkout...");
+            rzp.open();
+        } catch (error) {
+            console.error("❌ Razorpay initialization error:", error);
+            alert("Payment Modal Error: " + error.message);
+        }
+
+    })
+    .catch(err => {
+        console.error("Order creation error:", err);
+        alert("Failed to create order: " + err.message);
+    });
+
+}
+
+</script>

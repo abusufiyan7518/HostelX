@@ -1,0 +1,515 @@
+{% extends 'warden/base.html' %}
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+/* ================= GLOBAL NETFLIX BASE ================= */
+body{
+    background:#0b0b0f;
+    color:#e5e7eb;
+    font-family:'Inter', sans-serif;
+}
+
+/* cinematic glow */
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+        radial-gradient(circle at 10% 20%, rgba(229,9,20,0.18), transparent 45%),
+        radial-gradient(circle at 90% 70%, rgba(99,102,241,0.18), transparent 45%);
+    z-index:-2;
+}
+
+body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size:80px 80px;
+    opacity:0.06;
+    z-index:-1;
+}
+
+/* ================= CONTAINER ================= */
+.container{
+    max-width:1350px;
+    margin:auto;
+    padding:28px;
+}
+
+/* ================= HEADER ================= */
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:22px;
+}
+
+.header h2{
+    font-size:26px;
+    font-weight:700;
+}
+
+.header p{
+    font-size:13px;
+    color:#9ca3af;
+}
+
+/* button (Netflix red CTA) */
+.btn-top{
+    padding:10px 16px;
+    border-radius:12px;
+    background:#e50914;
+    color:white;
+    text-decoration:none;
+    font-size:13px;
+    font-weight:600;
+    transition:0.25s;
+    box-shadow:0 10px 25px rgba(229,9,20,0.25);
+}
+
+.btn-top:hover{
+    transform:translateY(-2px);
+    background:#b20710;
+}
+
+/* ================= STATS (Netflix tiles) ================= */
+.stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:16px;
+    margin-bottom:22px;
+}
+
+.stat{
+    padding:18px;
+    border-radius:16px;
+    background:rgba(17,24,39,0.65);
+    border:1px solid rgba(255,255,255,0.06);
+    backdrop-filter:blur(14px);
+    transition:0.25s;
+}
+
+.stat:hover{
+    transform:translateY(-4px);
+    border-color:#e50914;
+}
+
+.stat h3{
+    margin:0;
+    font-size:26px;
+    font-weight:700;
+}
+
+.stat p{
+    font-size:12px;
+    color:#9ca3af;
+}
+
+/* ================= CHARTS SECTION ================= */
+.chart-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    margin-bottom:22px;
+}
+
+.chart-card{
+    background:rgba(17,24,39,0.65);
+    border:1px solid rgba(255,255,255,0.06);
+    border-radius:18px;
+    padding:20px;
+    backdrop-filter:blur(14px);
+    min-height:280px;
+}
+
+/* ================= SEARCH ================= */
+.search input{
+    width:100%;
+    padding:12px 14px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,0.08);
+    background:rgba(15,23,42,0.8);
+    color:#e5e7eb;
+    outline:none;
+    margin-bottom:22px;
+}
+
+.search input:focus{
+    border-color:#e50914;
+    box-shadow:0 0 0 3px rgba(229,9,20,0.15);
+}
+
+/* ================= TABLE CARD ================= */
+.card{
+    background:rgba(17,24,39,0.6);
+    border-radius:18px;
+    border:1px solid rgba(255,255,255,0.06);
+    overflow:hidden;
+    backdrop-filter:blur(16px);
+    margin-bottom: 22px;
+}
+
+/* ================= TABLE ================= */
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+thead{
+    background:rgba(255,255,255,0.03);
+}
+
+th{
+    padding:14px;
+    font-size:11px;
+    color:#9ca3af;
+    text-transform:uppercase;
+}
+
+td{
+    padding:14px;
+    border-top:1px solid rgba(255,255,255,0.05);
+    font-size:14px;
+}
+
+tr:hover{
+    background:rgba(229,9,20,0.05);
+}
+
+/* ================= USER ================= */
+.user{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.avatar{
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg,#e50914,#6366f1);
+    font-weight:600;
+}
+
+.avatar-img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.user-info .name{
+    font-weight:500;
+}
+
+/* ================= BADGE ================= */
+.badge{
+    padding:5px 10px;
+    border-radius:999px;
+    font-size:11px;
+    background:rgba(34,197,94,0.15);
+    color:#22c55e;
+}
+
+/* ================= ACTION MENU ================= */
+.actions{
+    position:relative;
+    display:inline-block;
+}
+
+.actions button{
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.08);
+    padding:6px 10px;
+    border-radius:8px;
+    color:white;
+    cursor:pointer;
+}
+
+.actions button:hover{
+    background:rgba(229,9,20,0.2);
+}
+
+/* dropdown */
+.dropdown{
+    position:absolute;
+    right:0;
+    top:100%;
+    margin-top:6px;
+    width:170px;
+    background:#0f172a;
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:12px;
+    display:none;
+    z-index:10;
+}
+
+.actions.active .dropdown{
+    display:block;
+}
+
+.dropdown a,
+.dropdown button{
+    width:100%;
+    padding:10px;
+    text-align:left;
+    background:none;
+    border:none;
+    color:white;
+    font-size:13px;
+    cursor:pointer;
+}
+
+.dropdown a:hover{
+    background:rgba(229,9,20,0.1);
+}
+
+.dropdown button:hover{
+    background:rgba(239,68,68,0.15);
+}
+
+/* muted */
+.muted{
+    color:#6b7280;
+}
+
+/* responsive */
+@media(max-width:900px){
+    .stats, .chart-grid{
+        grid-template-columns:1fr;
+    }
+}
+
+</style>
+
+<div class="container">
+
+<div class="header">
+    <div>
+        <h2>🎬 Student Details Panel</h2>
+        <p>HostelX Student Management</p>
+    </div>
+
+    <a href="{% url 'removal_history' %}" class="btn-top">
+        View History
+    </a>
+</div>
+
+<div class="stats">
+    <div class="stat">
+        <h3>{{ total }}</h3>
+        <p>Total Students</p>
+    </div>
+
+    <div class="stat">
+        <h3>{{ active }}</h3>
+        <p>Active</p>
+    </div>
+
+    <div class="stat">
+        <h3>{{ removed }}</h3>
+        <p>Removed</p>
+    </div>
+</div>
+
+<div class="chart-grid">
+    <div class="chart-card">
+        <h4 style="color:#9ca3af; margin-bottom:14px; font-size:13px; font-weight:500;">Students Breakdown (By Course)</h4>
+        <div style="height:200px;">
+            <canvas id="courseChart"></canvas>
+        </div>
+    </div>
+    <div class="chart-card">
+        <h4 style="color:#9ca3af; margin-bottom:14px; font-size:13px; font-weight:500;">Occupancy Status</h4>
+        <div style="height:200px;">
+            <canvas id="occupancyChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="search">
+    <input id="search" placeholder="Search students by name, course, or room...">
+</div>
+
+<div class="card">
+
+<table id="table">
+
+<thead>
+<tr>
+    <th>Student</th>
+    <th>Room</th>
+    <th>Course</th>
+    <th>Year</th>
+    <th>Status</th>
+    <th></th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for s in students %}
+<tr>
+
+<td>
+    <div class="user">
+        <div class="avatar">
+            {% if s.profile_pic %}
+                <img src="{{ s.profile_pic.url }}" class="avatar-img">
+            {% else %}
+                {{ s.user.username|first|upper }}
+            {% endif %}
+        </div>
+
+        <div class="user-info">
+            <div class="name">{{ s.user.username }}</div>
+        </div>
+    </div>
+</td>
+
+<td>
+    {% if s.room %}
+        <b>{{ s.room.room_number }}</b>
+    {% else %}
+        <span class="muted">Not Assigned</span>
+    {% endif %}
+</td>
+
+<td>{{ s.course }}</td>
+<td>{{ s.current_year }}/{{ s.course_duration }}</td>
+
+<td><span class="badge">Active</span></td>
+
+<td>
+
+<div class="actions">
+    <button onclick="toggleMenu(this)">⋮</button>
+
+    <div class="dropdown">
+
+        {% if not s.room %}
+        <a href="{% url 'assign_room_manual' s.id %}">Assign Room</a>
+        {% endif %}
+
+        <form method="POST" action="{% url 'remove_student' s.id %}">
+            {% csrf_token %}
+            <button onclick="return confirm('Remove student?')">
+                Remove
+            </button>
+        </form>
+
+    </div>
+
+</div>
+
+</td>
+
+</tr>
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<script>
+document.getElementById("search").addEventListener("input", function(){
+    let val = this.value.toLowerCase();
+    document.querySelectorAll("#table tbody tr").forEach(row=>{
+        row.style.display = row.innerText.toLowerCase().includes(val) ? "" : "none";
+    });
+});
+
+function toggleMenu(btn){
+    document.querySelectorAll(".actions").forEach(a=>{
+        if(a !== btn.parentElement){
+            a.classList.remove("active");
+        }
+    });
+    btn.parentElement.classList.toggle("active");
+}
+
+document.addEventListener("click", function(e){
+    if(!e.target.closest(".actions")){
+        document.querySelectorAll(".actions").forEach(a=>a.classList.remove("active"));
+    }
+});
+
+// Analytics Charts Generation
+document.addEventListener("DOMContentLoaded", function () {
+    // Doughnut Chart - Occupancy Status
+    const ctx1 = document.getElementById('occupancyChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'doughnut',
+        data: {
+            labels: ['Active Students', 'Removed/Other'],
+            datasets: [{
+                data: ['{{ active }}', '{{ removed }}'],
+                backgroundColor: ['rgba(34, 197, 94, 0.7)', 'rgba(229, 9, 20, 0.7)'],
+                borderColor: '#0b0b0f',
+                borderWidth: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#9ca3af', font: { family: 'Inter', size: 12 } }
+                }
+            }
+        }
+    });
+
+    // Bar Chart - Courses Data 
+    const ctx2 = document.getElementById('courseChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: ['Total Students', 'Active Students'],
+            datasets: [{
+                label: 'Student Statistics',
+                data: ['{{ total }}', '{{ active }}'],
+                backgroundColor: ['rgba(99, 102, 241, 0.7)', 'rgba(229, 9, 20, 0.7)'],
+                borderColor: '#e5e7eb',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    ticks: { color: '#9ca3af' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#9ca3af' }
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+});
+</script>
+
+{% endblock %}

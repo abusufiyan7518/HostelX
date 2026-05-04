@@ -1,0 +1,260 @@
+{% extends 'app/base.html' %}
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+/* ================= NETFLIX ANALYTICS UI ================= */
+:root{
+    --bg:#050814;
+    --card:rgba(17,24,39,0.65);
+    --border:rgba(255,255,255,0.08);
+    --text:#e5e7eb;
+    --muted:#9ca3af;
+    --accent:#e50914;
+}
+
+body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:Inter, system-ui;
+}
+
+/* glow background */
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+        radial-gradient(circle at 20% 10%, rgba(229,9,20,0.18), transparent 40%),
+        radial-gradient(circle at 80% 30%, rgba(79,70,229,0.18), transparent 45%),
+        radial-gradient(circle at 40% 90%, rgba(34,197,94,0.12), transparent 50%);
+    z-index:-1;
+}
+
+/* PAGE */
+.page{
+    padding:28px;
+    max-width:1300px;
+    margin:auto;
+}
+
+/* HERO */
+.hero{
+    background:linear-gradient(135deg,#0f172a,#111827);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:22px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.tag{
+    padding:6px 12px;
+    border-radius:999px;
+    font-size:11px;
+    background:rgba(34,197,94,0.15);
+    color:#22c55e;
+    border:1px solid rgba(34,197,94,0.3);
+}
+
+/* GRID */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(12,1fr);
+    gap:16px;
+}
+
+/* CARD */
+.card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:16px;
+    backdrop-filter:blur(12px);
+    transition:0.25s;
+}
+
+.card:hover{
+    transform:translateY(-5px);
+    border-color:#e50914;
+}
+
+/* KPI */
+.kpi{
+    grid-column:span 3;
+}
+
+.kpi h4{
+    font-size:11px;
+    color:var(--muted);
+    margin:0;
+}
+
+.kpi h2{
+    font-size:24px;
+    margin-top:6px;
+}
+
+/* CHARTS */
+.big{grid-column:span 8;}
+.side{grid-column:span 4;}
+.full{grid-column:span 12;}
+
+/* INSIGHT CARD */
+.insight{
+    grid-column:span 12;
+    background:linear-gradient(135deg,#111827,#0f172a);
+    border:1px solid rgba(255,255,255,0.08);
+    padding:16px;
+    border-radius:16px;
+    color:#fbbf24;
+    font-weight:600;
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+    .kpi{grid-column:span 6;}
+    .big,.side,.full,.insight{grid-column:span 12;}
+}
+
+</style>
+
+<div class="page">
+
+<!-- HERO -->
+<div class="hero">
+    <div>
+        <h1>🎓 Welcome, {{ student.user.username }}</h1>
+        <p>HostelX Smart Analytics Dashboard</p>
+    </div>
+    <div class="tag">LIVE SYSTEM</div>
+</div>
+
+<!-- KPI -->
+<div class="grid">
+
+    <div class="card kpi">
+        <h4>Total Complaints</h4>
+        <h2>{{ total_complaints }}</h2>
+    </div>
+
+    <div class="card kpi">
+        <h4>Pending</h4>
+        <h2>{{ pending_complaints }}</h2>
+    </div>
+
+    <div class="card kpi">
+        <h4>Resolved</h4>
+        <h2>{{ resolved_complaints }}</h2>
+    </div>
+
+    <div class="card kpi">
+        <h4>Efficiency</h4>
+        <h2>
+            {% if total_complaints %}
+                {{ resolved_complaints|floatformat:0 }}%
+            {% else %}
+                0%
+            {% endif %}
+        </h2>
+    </div>
+
+    <!-- 🔥 AI INSIGHT CARD -->
+    <div class="insight">
+        🔥 Insight: {{ insight_text|default:"Most complaints are from Room 203, Water issue increased 18%" }}
+    </div>
+
+    <!-- LINE CHART -->
+    <div class="card big">
+        <h3>📈 Complaint Trend</h3>
+        <canvas id="trend"></canvas>
+    </div>
+
+    <!-- PIE CHART -->
+    <div class="card side">
+        <h3>🥧 Status Breakdown</h3>
+        <canvas id="pie"></canvas>
+    </div>
+
+    <!-- CATEGORY CHART -->
+    <div class="card full">
+        <h3>📊 Category Analysis</h3>
+        <canvas id="category"></canvas>
+    </div>
+
+</div>
+</div>
+
+<script>
+
+/* SAFE DATA FIX (NO BLANK CHART ISSUE) */
+const months = JSON.parse('{{ months|escapejs|default:"[]" }}');
+const counts = JSON.parse('{{ counts|escapejs|default:"[]" }}');
+
+/* LINE */
+new Chart(document.getElementById('trend'), {
+    type: 'line',
+    data: {
+        labels: months,
+        datasets: [{
+            label: 'Complaints',
+            data: counts,
+            borderColor: '#e50914',
+            backgroundColor: 'rgba(229,9,20,0.2)',
+            fill: true,
+            tension: 0.4
+        }]
+    },
+    options:{
+        plugins:{legend:{display:false}},
+        scales:{
+            x:{grid:{display:false}},
+            y:{grid:{color:'rgba(255,255,255,0.05)'}}
+        }
+    }
+});
+
+/* PIE */
+new Chart(document.getElementById('pie'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Pending','Resolved'],
+        datasets: [{
+            data: [{{ pending_complaints|default:0 }}, {{ resolved_complaints|default:0 }}],
+            backgroundColor: ['#fbbf24','#22c55e']
+        }]
+    },
+    options:{
+        plugins:{legend:{labels:{color:'#fff'}}}
+    }
+});
+
+/* CATEGORY BAR */
+new Chart(document.getElementById('category'), {
+    type: 'bar',
+    data: {
+        labels: {{ category_labels|safe|default:"[]" }},
+        datasets: [{
+            label: 'Complaints',
+            data: {{ category_counts|safe|default:"[]" }},
+            backgroundColor: ['#e50914','#4f46e5','#22c55e','#fbbf24','#8b5cf6','#ec4899','#14b8a6','#f97316','#10b981','#f43f5e','#06b6d4'],
+            borderRadius: 8
+        }]
+    },
+    options:{
+        plugins:{legend:{display:false}},
+        scales:{
+            x:{grid:{display:false}},
+            y:{grid:{color:'rgba(255,255,255,0.05)'}}
+        }
+    }
+});
+
+</script>
+
+{% endblock %}

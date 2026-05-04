@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Finance Dashboard</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body{
+    margin:0;
+    font-family:'Inter';
+    background:#050814;
+    color:#e5e7eb;
+}
+
+/* layout */
+.container{
+    padding:30px;
+}
+
+/* top cards */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+    margin-bottom:25px;
+}
+
+.card{
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.08);
+    padding:18px;
+    border-radius:16px;
+    backdrop-filter:blur(12px);
+}
+
+.card h3{
+    font-size:12px;
+    color:#94a3b8;
+}
+
+.card h1{
+    font-size:22px;
+    margin-top:8px;
+}
+
+/* chart + table layout */
+.main{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:20px;
+}
+
+/* table */
+table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+}
+
+th,td{
+    padding:12px;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+    text-align:left;
+}
+
+.status{
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:11px;
+}
+
+.SUCCESS{background:#22c55e33;color:#22c55e;}
+.PENDING{background:#f59e0b33;color:#f59e0b;}
+
+.progress{
+    height:10px;
+    background:#111827;
+    border-radius:999px;
+    overflow:hidden;
+    margin-top:10px;
+}
+
+.fill{
+    height:100%;
+    background:linear-gradient(90deg,#6366f1,#22c55e);
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>💳 Finance Dashboard</h2>
+
+    <!-- TOP CARDS -->
+    <div class="grid">
+
+        <div class="card">
+            <h3>Total Fee</h3>
+            <h1>₹{{ total_fee }}</h1>
+        </div>
+
+        <div class="card">
+            <h3>Paid</h3>
+            <h1>₹{{ paid_amount }}</h1>
+        </div>
+
+        <div class="card">
+            <h3>Pending</h3>
+            <h1>₹{{ pending_amount }}</h1>
+        </div>
+
+        <div class="card">
+            <h3>Remaining</h3>
+            <h1>₹{{ remaining }}</h1>
+        </div>
+
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="card">
+        <h3>Fee Completion</h3>
+
+        <div class="progress">
+            <div class="fill" style="width:{{ percent }}%"></div>
+        </div>
+
+        <p style="font-size:12px;color:#94a3b8;">
+            {{ percent }}% completed
+        </p>
+    </div>
+
+    <br>
+
+    <div class="main">
+
+        <!-- TABLE -->
+        <div class="card">
+
+            <h3>Transactions</h3>
+
+            <table>
+                <tr>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+
+                {% for p in payments %}
+
+                <tr>
+                    <td>₹{{ p.amount }}</td>
+                    <td>{{ p.method }}</td>
+                    <td>
+                        <span class="status {{ p.status }}">
+                            {{ p.status }}
+                        </span>
+                    </td>
+                    <td>{{ p.created_at }}</td>
+                </tr>
+
+                {% endfor %}
+
+            </table>
+
+        </div>
+
+        <!-- ANALYTICS -->
+        <div class="card">
+
+            <h3>Revenue Chart</h3>
+
+            <canvas id="chart"></canvas>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+const ctx = document.getElementById('chart');
+
+new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Paid', 'Pending'],
+        datasets: [{
+            data: [{{ paid_amount }}, {{ pending_amount }}],
+            backgroundColor: ['#22c55e', '#f59e0b']
+        }]
+    }
+});
+
+</script>
+
+</body>
+</html>

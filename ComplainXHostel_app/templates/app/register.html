@@ -1,0 +1,328 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+<title>Register | HostelX</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- ✅ FAVICON -->
+<link rel="icon" href="{% static 'images/HostelX_favicon.jpeg' %}">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Inter',sans-serif;
+}
+
+body{
+    height:100vh;
+    display:flex;
+    background:#0a0f1c;
+    color:#e5e7eb;
+    overflow:hidden;
+}
+
+/* BACKGROUND */
+body::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(229,9,20,0.25), transparent 40%),
+        radial-gradient(circle at 80% 60%, rgba(79,70,229,0.20), transparent 45%),
+        radial-gradient(circle at 50% 90%, rgba(34,197,94,0.12), transparent 50%);
+    z-index:-1;
+}
+
+body::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size:70px 70px;
+    opacity:0.08;
+    z-index:-1;
+}
+
+/* LEFT */
+.left{
+    flex:2.5;
+    position:relative;
+    background:url("/static/images/HostelX_register.jpeg") center/cover;
+    filter:brightness(1.0);
+}
+
+.left::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(90deg, rgba(10,15,28,0.9), transparent);
+}
+
+.left-content{
+    position:absolute;
+    bottom:60px;
+    left:50px;
+}
+
+.left h1{
+    font-size:34px;
+    font-weight:700;
+    color:white;
+}
+
+.left p{
+    margin-top:6px;
+    font-size:14px;
+    color:#e5e7eb; 
+    max-width:320px;
+}
+
+/* RIGHT */
+.right{
+    flex:1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:40px;
+}
+
+/* CARD */
+.form-box{
+    width:420px;
+    padding:32px;
+    border-radius:18px;
+    background:rgba(17,24,39,0.75);
+    border:1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(18px);
+    box-shadow:0 40px 100px rgba(0,0,0,0.6);
+    animation:fade 0.5s ease;
+}
+
+@keyframes fade{
+    from{opacity:0; transform:translateY(15px);}
+    to{opacity:1; transform:translateY(0);}
+}
+
+h2{
+    font-size:22px;
+    font-weight:700;
+    margin-bottom:6px;
+}
+
+.sub{
+    font-size:13px;
+    color:#94a3b8;
+    margin-bottom:18px;
+}
+
+/* INPUTS */
+.input-group{
+    margin-bottom:12px;
+}
+
+input, select{
+    width:100%;
+    padding:12px 14px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.08);
+    background:#0f172a;
+    color:#e5e7eb;
+    outline:none;
+    transition:0.2s;
+}
+
+input:focus, select:focus{
+    border-color:#e50914;
+    box-shadow:0 0 0 3px rgba(229,9,20,0.15);
+}
+
+/* BUTTON */
+button{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    background:linear-gradient(135deg,#e50914,#7c3aed);
+    color:white;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+button:hover{
+    background:#b20710;
+    transform:translateY(-2px);
+}
+
+/* INFO */
+.info-box{
+    font-size:12px;
+    padding:10px;
+    border-radius:10px;
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.06);
+    color:#94a3b8;
+    margin-bottom:12px;
+}
+
+/* PASSWORD */
+#strength{
+    font-size:12px;
+    margin-top:4px;
+}
+
+/* TOAST */
+.toast{
+    padding:10px;
+    border-radius:10px;
+    margin-bottom:10px;
+    font-size:13px;
+}
+
+.error{background:rgba(239,68,68,0.15); color:#ef4444;}
+.success{background:rgba(34,197,94,0.15); color:#22c55e;}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+    .left{display:none;}
+    .right{flex:1;}
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- LEFT -->
+<div class="left">
+    <div class="left-content">
+        <h1>HostelX System</h1>
+        <p>Smart allocation, analytics & SaaS-grade hostel management system</p>
+    </div>
+</div>
+
+<!-- RIGHT -->
+<div class="right">
+
+<div class="form-box">
+
+<h2>Create Account</h2>
+<div class="sub">Join Smart HostelX Platform</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="toast {{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+<form method="POST">
+{% csrf_token %}
+
+<div class="input-group">
+    <input type="text" name="username" placeholder="Username" required>
+</div>
+
+<div class="input-group">
+    <input type="email" name="email" placeholder="Email" required>
+</div>
+
+<div class="input-group">
+    <input type="password" id="password" name="password" placeholder="Password" required>
+    <div id="strength"></div>
+</div>
+
+<div class="info-box">
+    Auto room allocation based on availability, course, and preferences.
+</div>
+
+<div class="input-group">
+    <select id="course" name="course" required>
+        <option value="">Select Course</option>
+        <option value="BCA" data-years="3">BCA</option>
+        <option value="MCA" data-years="2">MCA</option>
+        <option value="BTECH" data-years="4">B.Tech</option>
+    </select>
+</div>
+
+<div class="input-group">
+    <select id="year" name="current_year" required>
+        <option value="">Select Year</option>
+    </select>
+</div>
+
+<div class="input-group">
+    <select name="gender" required>
+        <option value="">Gender</option>
+        <option>Male</option>
+        <option>Female</option>
+    </select>
+</div>
+
+<div class="input-group">
+    <select name="prefers_ac" required>
+        <option value="">Room Type</option>
+        <option value="yes">AC</option>
+        <option value="no">Non-AC</option>
+    </select>
+</div>
+
+<div class="input-group">
+    <input type="text" name="contact" placeholder="Contact Number" required>
+</div>
+
+<button type="submit">Create Account</button>
+
+</form>
+
+</div>
+
+</div>
+
+<script>
+
+/* PASSWORD STRENGTH */
+let pass = document.getElementById("password");
+let strength = document.getElementById("strength");
+
+pass.addEventListener("input",()=>{
+    let val = pass.value;
+
+    if(val.length < 6){
+        strength.innerText="Weak password";
+        strength.style.color="#ef4444";
+    }
+    else if(/[A-Z]/.test(val) && /[0-9]/.test(val)){
+        strength.innerText="Strong password";
+        strength.style.color="#22c55e";
+    } else {
+        strength.innerText="Medium password";
+        strength.style.color="#fbbf24";
+    }
+});
+
+/* COURSE → YEAR */
+let course = document.getElementById("course");
+let year = document.getElementById("year");
+
+course.addEventListener("change",()=>{
+    let selected = course.options[course.selectedIndex];
+    let total = selected.getAttribute("data-years");
+
+    year.innerHTML = '<option value="">Select Year</option>';
+
+    for(let i=1;i<=total;i++){
+        year.innerHTML += `<option value="${i}">Year ${i}</option>`;
+    }
+});
+
+</script>
+
+</body>
+</html>

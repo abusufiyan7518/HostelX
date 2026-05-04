@@ -1,0 +1,424 @@
+{% extends 'warden/base.html' %}
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+/* ================= NETFLIX DARK BASE ================= */
+body{
+    background:#050814;
+    color:#e5e7eb;
+    font-family: Inter, sans-serif;
+    overflow-x:hidden;
+}
+
+/* cinematic glow background */
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+        radial-gradient(circle at 20% 10%, rgba(229,9,20,0.18), transparent 40%),
+        radial-gradient(circle at 80% 40%, rgba(229,9,20,0.08), transparent 45%),
+        radial-gradient(circle at 40% 90%, rgba(34,197,94,0.10), transparent 50%);
+    z-index:-1;
+}
+
+/* subtle grid */
+body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size:70px 70px;
+    opacity:0.06;
+    z-index:-1;
+}
+
+/* CONTAINER */
+.container{
+    padding:26px;
+    max-width:1300px;
+    margin:auto;
+}
+
+/* HEADER */
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+}
+
+.header h2{
+    font-size:26px;
+    font-weight:700;
+    letter-spacing:0.3px;
+}
+
+/* ================= STATS ================= */
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+    margin-bottom:22px;
+}
+
+.stat{
+    background:rgba(17,24,39,0.65);
+    padding:16px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,0.08);
+    text-align:center;
+    transition:0.25s;
+    backdrop-filter:blur(14px);
+}
+
+.stat:hover{
+    transform:translateY(-5px);
+    border-color:#e50914;
+    box-shadow:0 20px 50px rgba(229,9,20,0.15);
+}
+
+/* ================= CHARTS ================= */
+.charts{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:14px;
+    margin-bottom:20px;
+}
+
+.box{
+    background:rgba(17,24,39,0.65);
+    padding:16px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,0.08);
+    backdrop-filter:blur(14px);
+    min-height:280px;
+}
+
+/* ================= SEARCH ================= */
+.search{
+    width:100%;
+    padding:12px;
+    border-radius:12px;
+    background:#0f172a;
+    color:white;
+    border:1px solid rgba(255,255,255,0.1);
+    margin-bottom:14px;
+    transition:0.2s;
+    outline:none;
+}
+
+.search:focus{
+    border-color:#e50914;
+    box-shadow:0 0 0 3px rgba(229,9,20,0.2);
+}
+
+/* ================= LIST ================= */
+.list{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(330px,1fr));
+    gap:14px;
+}
+
+/* CARD */
+.card{
+    background:rgba(17,24,39,0.65);
+    padding:16px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,0.08);
+    transition:0.25s;
+    backdrop-filter:blur(14px);
+}
+
+.card:hover{
+    transform:translateY(-6px);
+    border-color:#e50914;
+    box-shadow:0 25px 60px rgba(0,0,0,0.6);
+}
+
+/* TOP */
+.top{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:8px;
+}
+
+/* BADGE */
+.badge{
+    font-size:11px;
+    padding:5px 10px;
+    border-radius:999px;
+    font-weight:600;
+}
+
+.pending{background:rgba(251,191,36,0.15);color:#fbbf24;}
+.approved{background:rgba(34,197,94,0.15);color:#22c55e;}
+.rejected{background:rgba(239,68,68,0.15);color:#ef4444;}
+
+/* CATEGORY PILL */
+.pill{
+    font-size:11px;
+    padding:4px 10px;
+    border-radius:999px;
+    margin-right:6px;
+    display:inline-block;
+}
+
+.cat{
+    background:rgba(229,9,20,0.15);
+    color:#fca5a5;
+    border:1px solid rgba(229,9,20,0.3);
+}
+
+.subcat{
+    background:rgba(34,197,94,0.12);
+    color:#86efac;
+    border:1px solid rgba(34,197,94,0.25);
+}
+
+/* IMAGE */
+.img img{
+    width:100%;
+    height:180px;
+    object-fit:cover;
+    border-radius:12px;
+    margin-top:10px;
+    transition:0.3s;
+}
+
+.card:hover .img img{
+    transform:scale(1.03);
+}
+
+/* BUTTONS */
+.actions{
+    display:flex;
+    gap:10px;
+    margin-top:10px;
+}
+
+.btn{
+    flex:1;
+    padding:9px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    color:white;
+    font-weight:600;
+    transition:0.2s;
+}
+
+.approve{
+    background:linear-gradient(135deg,#22c55e,#16a34a);
+}
+
+.reject{
+    background:linear-gradient(135deg,#e50914,#b91c1c);
+}
+
+.btn:hover{
+    transform:translateY(-2px);
+}
+
+@media(max-width:900px){
+    .stats, .charts{
+        grid-template-columns:1fr;
+    }
+}
+</style>
+
+<div class="container">
+
+<div class="header">
+    <h2>🎬 Complaint Dashboard</h2>
+</div>
+
+<div class="stats">
+    <div class="stat"><b>Total</b><br><span style="font-size: 20px; font-weight: 600;">{{ data|length }}</span></div>
+    <div class="stat"><b>Pending</b><br><span style="font-size: 20px; font-weight: 600; color: #fbbf24;">{{ pending_count }}</span></div>
+    <div class="stat"><b>Approved</b><br><span style="font-size: 20px; font-weight: 600; color: #22c55e;">{{ approved_count }}</span></div>
+    <div class="stat"><b>Rejected</b><br><span style="font-size: 20px; font-weight: 600; color: #ef4444;">{{ rejected_count }}</span></div>
+</div>
+
+<div class="charts">
+
+    <div class="box">
+        <h4 style="color:#94a3b8; margin-bottom:12px; font-size:12px; font-weight: 500;">Complaints Trend Overview</h4>
+        <div style="height:210px;">
+            <canvas id="trendChart"></canvas>
+        </div>
+    </div>
+
+    <div class="box">
+        <h4 style="color:#94a3b8; margin-bottom:12px; font-size:12px; font-weight: 500;">Category Breakdown</h4>
+        <div style="height:210px;">
+            <canvas id="categoryChart"></canvas>
+        </div>
+    </div>
+
+</div>
+
+<input class="search" id="searchInput" placeholder="Search complaints by student, room or category...">
+
+<div class="list" id="complaintsList">
+
+{% for c in data %}
+<div class="card complaint-card">
+
+    <div class="top">
+        <b>{{ c.student.user.username }}</b>
+
+        <span class="badge
+        {% if c.status == 'Approved' %}approved
+        {% elif c.status == 'Rejected' %}rejected
+        {% else %}pending{% endif %}">
+        {{ c.status }}
+        </span>
+    </div>
+
+    <p><b>Room:</b> {{ c.student.room.room_number|default:"Not Assigned" }}</p>
+
+    <div style="margin:6px 0;">
+        {% if c.category %}
+            <span class="pill cat">{{ c.category }}</span>
+        {% endif %}
+
+        {% if c.subcategory %}
+            <span class="pill subcat">{{ c.subcategory }}</span>
+        {% endif %}
+    </div>
+
+    <p>{{ c.description }}</p>
+
+    {% if c.image %}
+    <div class="img">
+        <img src="{{ c.image.url }}" alt="Complaint Image">
+    </div>
+    {% endif %}
+
+    {% if c.status == "Pending" %}
+    <div class="actions">
+        <button class="btn approve" onclick="updateStatus({{ c.id }},'Approved')">Approve</button>
+        <button class="btn reject" onclick="updateStatus({{ c.id }},'Rejected')">Reject</button>
+    </div>
+    {% endif %}
+
+</div>
+{% endfor %}
+
+</div>
+</div>
+
+<script>
+
+function updateStatus(id, status){
+    fetch("/update-complaint-status/",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/x-www-form-urlencoded",
+            "X-CSRFToken":getCookie("csrftoken")
+        },
+        body:`id=${id}&status=${status}`
+    })
+    .then(r=>r.json())
+    .then(d=>{
+        if(d.status==="success"){
+            location.reload();
+        }
+    });
+}
+
+function getCookie(name){
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Search Feature
+document.getElementById("searchInput").addEventListener("input", function(){
+    let val = this.value.toLowerCase();
+    
+    document.querySelectorAll(".complaint-card").forEach(card=>{
+        card.style.display = card.innerText.toLowerCase().includes(val) ? "block" : "none";
+    });
+});
+
+/* CHARTS */
+document.addEventListener("DOMContentLoaded", function () {
+    new Chart(document.getElementById("trendChart"),{
+        type:"line",
+        data:{
+            labels:{{ trend_labels|safe }},
+            datasets:[{
+                label: 'Complaints Trend',
+                data:{{ trend_counts|safe }},
+                borderColor:"#e50914",
+                backgroundColor: "rgba(229, 9, 20, 0.12)",
+                borderWidth: 2,
+                tension:0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    ticks: { color: '#94a3b8' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#94a3b8' }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: { color: '#94a3b8', font: { size: 11 } }
+                }
+            }
+        }
+    });
+
+    new Chart(document.getElementById("categoryChart"),{
+        type:"doughnut",
+        data:{
+            labels:{{ category_labels|safe }},
+            datasets:[{
+                data:{{ category_counts|safe }},
+                backgroundColor:["#e50914", "#22c55e", "#fbbf24", "#ef4444"],
+                borderColor: '#050814',
+                borderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#94a3b8', font: { size: 11 } }
+                }
+            }
+        }
+    });
+});
+
+</script>
+
+{% endblock %}

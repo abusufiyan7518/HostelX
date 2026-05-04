@@ -1,0 +1,252 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>HostelX | Warden Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- ✅ FAVICON -->
+    <link rel="icon" href="{% static 'images/HostelX_favicon.jpeg' %}">
+
+<style>
+
+:root{
+    --bg:#050814;
+    --panel:rgba(17,24,39,0.65);
+    --border:rgba(255,255,255,0.08);
+    --text:#e5e7eb;
+    --muted:#94a3b8;
+    --primary:#e50914;
+    --accent:#6366f1;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Inter, sans-serif;
+}
+
+body{
+    background:var(--bg);
+    color:var(--text);
+    overflow-x:hidden;
+}
+
+/* BACKGROUND */
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(229,9,20,0.15), transparent 40%),
+        radial-gradient(circle at 80% 30%, rgba(99,102,241,0.20), transparent 45%);
+    z-index:-2;
+}
+
+body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size:70px 70px;
+    opacity:0.05;
+    z-index:-1;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar{
+    width:270px;
+    height:100vh;
+    position:fixed;
+    left:0;
+    top:0;
+    background:rgba(15,23,42,0.75);
+    backdrop-filter: blur(18px);
+    border-right:1px solid var(--border);
+    padding:20px 14px;
+}
+
+/* ✅ LOGO HEADER */
+.sidebar-header{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:25px;
+    padding:6px 10px;
+}
+
+/* LOGO IMAGE */
+.logo-img{
+    height:34px;
+}
+
+/* BRAND TEXT */
+.brand{
+    display:flex;
+    flex-direction:column;
+}
+
+.brand-title{
+    font-size:14px;
+    font-weight:600;
+    color:white;
+}
+
+.brand-sub{
+    font-size:10px;
+    color:var(--muted);
+}
+
+/* NAV */
+.nav a{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px 12px;
+    margin-bottom:6px;
+    border-radius:10px;
+    text-decoration:none;
+    color:var(--muted);
+    transition:0.25s;
+    font-size:13px;
+}
+
+.nav a:hover{
+    background:rgba(229,9,20,0.12);
+    color:white;
+    transform:translateX(4px);
+}
+
+.nav a.active{
+    background:linear-gradient(135deg, rgba(229,9,20,0.25), rgba(99,102,241,0.08));
+    color:white;
+    border-left:2px solid var(--primary);
+}
+
+/* ================= MAIN ================= */
+.main{
+    margin-left:270px;
+    padding:26px;
+}
+
+/* TOPBAR */
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:14px 18px;
+    background:rgba(17,24,39,0.55);
+    border:1px solid var(--border);
+    border-radius:16px;
+    margin-bottom:22px;
+    backdrop-filter: blur(14px);
+    box-shadow:0 20px 60px rgba(0,0,0,0.4);
+}
+
+/* USER CHIP */
+.profile{
+    padding:8px 12px;
+    border-radius:999px;
+    background:rgba(229,9,20,0.12);
+    border:1px solid rgba(229,9,20,0.25);
+    font-size:12px;
+    color:#fff;
+}
+
+/* CARD */
+.card{
+    background:rgba(17,24,39,0.55);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:16px;
+    backdrop-filter: blur(14px);
+    transition:0.25s;
+}
+
+.card:hover{
+    transform:translateY(-5px);
+    border-color:var(--primary);
+}
+
+/* SCROLL */
+::-webkit-scrollbar{
+    width:6px;
+}
+::-webkit-scrollbar-thumb{
+    background:rgba(229,9,20,0.5);
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+
+    .sidebar{width:70px;}
+
+    .brand{display:none;}
+
+    .nav a{
+        justify-content:center;
+        font-size:0;
+    }
+
+    .main{margin-left:70px;}
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+
+    <!-- ✅ LOGO -->
+    <div class="sidebar-header">
+
+        <img src="{% static 'images/HostelX_logo.jpeg' %}" class="logo-img">
+
+        <div class="brand">
+            <div class="brand-title">HostelX</div>
+            <div class="brand-sub">Warden Panel</div>
+        </div>
+
+    </div>
+
+    <!-- NAV -->
+    <div class="nav">
+        <a href="{% url 'warden_dashboard' %}" class="active">📊 Dashboard</a>
+        <a href="{% url 'warden_students' %}">🎓 Students Details</a>
+        <a href="{% url 'warden_complaints' %}">📝 Complaints</a>
+        <a href="{% url 'manage_leaves' %}">📄 Leaves</a>
+        <a href="{% url 'warden_visitors' %}">👤 Visitors</a>
+        <a href="{% url 'warden_transfers' %}">🔁 Transfers</a>
+        <a href="{% url 'warden_fee_dashboard' %}">🏦 Fees</a>
+        <a href="{% url 'logout' %}">🚪 Logout</a>
+    </div>
+
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+    <div class="topbar">
+        <div>
+            <b>HostelX Warden</b> • Welcome back {{ request.user.username }} 👋
+        </div>
+
+        <div class="profile">
+            WARDEN • LIVE
+        </div>
+    </div>
+
+    {% block content %}{% endblock %}
+
+</div>
+
+</body>
+</html>

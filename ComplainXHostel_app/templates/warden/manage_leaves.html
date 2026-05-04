@@ -1,0 +1,486 @@
+{% extends "warden/base.html" %}
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+/* ================= NETFLIX DARK BASE ================= */
+body{
+    background:#050814;
+    color:#e2e8f0;
+}
+
+/* cinematic background */
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+        radial-gradient(circle at 20% 10%, rgba(229,9,20,0.18), transparent 40%),
+        radial-gradient(circle at 80% 40%, rgba(99,102,241,0.18), transparent 45%),
+        radial-gradient(circle at 40% 90%, rgba(34,197,94,0.10), transparent 50%);
+    z-index:-1;
+}
+
+/* subtle grid */
+body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size:70px 70px;
+    opacity:0.06;
+    z-index:-1;
+}
+
+.container{
+    padding:26px;
+    max-width:1300px;
+    margin:auto;
+}
+
+/* HEADER */
+.header{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:20px;
+}
+
+/* ================= STATS ================= */
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+    margin-bottom:22px;
+}
+
+.stat{
+    background:rgba(17,24,39,0.65);
+    padding:16px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,0.08);
+    text-align:center;
+    transition:0.25s;
+    backdrop-filter:blur(14px);
+}
+
+.stat:hover{
+    transform:translateY(-5px);
+    border-color:#e50914;
+    box-shadow:0 20px 50px rgba(229,9,20,0.15);
+}
+
+/* ================= CHARTS ================= */
+.charts{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:14px;
+    margin-bottom:20px;
+}
+
+.box{
+    background:rgba(17,24,39,0.65);
+    padding:16px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,0.08);
+    backdrop-filter:blur(14px);
+    min-height:260px;
+}
+
+/* SEARCH BAR SEARCH */
+.search{
+    width:100%;
+    padding:12px;
+    border-radius:12px;
+    background:#0f172a;
+    color:white;
+    border:1px solid rgba(255,255,255,0.1);
+    margin-bottom:18px;
+    transition:0.2s;
+    outline:none;
+}
+
+.search:focus{
+    border-color:#e50914;
+    box-shadow:0 0 0 3px rgba(229,9,20,0.2);
+}
+
+/* GRID */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+    gap:15px;
+}
+
+/* ================= NETFLIX CARD ================= */
+.card{
+    background:rgba(17,24,39,0.65);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:18px;
+    padding:16px;
+    transition:.25s;
+    backdrop-filter:blur(14px);
+    box-shadow:0 10px 30px rgba(0,0,0,0.4);
+}
+
+.card:hover{
+    transform:translateY(-6px);
+    border-color:#e50914;
+    box-shadow:0 25px 60px rgba(0,0,0,0.6);
+}
+
+/* META */
+.meta{
+    font-size:12px;
+    color:#94a3b8;
+    margin-top:4px;
+}
+
+/* AVATAR */
+.avatar{
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    overflow:hidden;
+    background:#e50914;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-weight:600;
+}
+
+.avatar-img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+/* ================= STATUS BADGES ================= */
+.badge{
+    padding:5px 12px;
+    border-radius:999px;
+    font-size:11px;
+    margin-top:8px;
+    display:inline-block;
+    font-weight:600;
+}
+
+.pending{
+    background:rgba(251,191,36,0.15);
+    color:#fbbf24;
+}
+
+.approved{
+    background:rgba(34,197,94,0.15);
+    color:#22c55e;
+}
+
+.rejected{
+    background:rgba(239,68,68,0.15);
+    color:#ef4444;
+}
+
+/* ================= ACTION BUTTONS ================= */
+.actions{
+    margin-top:12px;
+    display:flex;
+    gap:10px;
+}
+
+.btn{
+    flex:1;
+    padding:8px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:12px;
+    font-weight:600;
+    transition:0.2s;
+}
+
+.approve{
+    background:linear-gradient(135deg,#22c55e,#16a34a);
+    color:white;
+}
+
+.reject{
+    background:linear-gradient(135deg,#e50914,#b91c1c);
+    color:white;
+}
+
+.btn:hover{
+    transform:translateY(-2px);
+}
+
+@media(max-width:900px){
+    .stats, .charts{
+        grid-template-columns:1fr;
+    }
+}
+</style>
+
+<div class="container">
+
+<div class="header">
+    <h2>🎬 Leave Requests</h2>
+</div>
+
+<div class="stats">
+    <div class="stat"><b>Total</b><br><span id="total-count" style="font-size: 20px; font-weight: 600; color: #fff;">0</span></div>
+    <div class="stat"><b>Pending</b><br><span id="pending-count" style="font-size: 20px; font-weight: 600; color: #fbbf24;">0</span></div>
+    <div class="stat"><b>Approved</b><br><span id="approved-count" style="font-size: 20px; font-weight: 600; color: #22c55e;">0</span></div>
+    <div class="stat"><b>Rejected</b><br><span id="rejected-count" style="font-size: 20px; font-weight: 600; color: #ef4444;">0</span></div>
+</div>
+
+<div class="charts">
+    <div class="box">
+        <h4 style="color:#94a3b8; margin-bottom:12px; font-size:12px; font-weight: 500;">Applications Trend Overview</h4>
+        <div style="height:190px;">
+            <canvas id="trendChart"></canvas>
+        </div>
+    </div>
+    <div class="box">
+        <h4 style="color:#94a3b8; margin-bottom:12px; font-size:12px; font-weight: 500;">Status Breakdown</h4>
+        <div style="height:190px;">
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<input class="search" id="searchInput" placeholder="Search by student, room or course...">
+
+<div class="grid" id="leaveList">
+
+{% for leave in leaves %}
+<div class="card leave-card">
+
+    <div style="display:flex;align-items:center;gap:10px;">
+        <div class="avatar">
+            {% if leave.student and leave.student.profile_pic %}
+                <img src="{{ leave.student.profile_pic.url }}" class="avatar-img">
+            {% else %}
+                {{ leave.student.user.username|default:"U"|first|upper }}
+            {% endif %}
+        </div>
+        <div>
+            <strong>{{ leave.student.user.username }}</strong>
+            <div class="meta">{{ leave.student.course }} | Year {{ leave.student.current_year }}</div>
+        </div>
+    </div>
+
+    <div class="meta">
+        🏠 Room: 
+        {% if leave.student.room %}
+            {{ leave.student.room.room_number }}
+        {% else %}
+            Not Assigned
+        {% endif %}
+    </div>
+
+    <div class="meta">📅 {{ leave.from_date }} → {{ leave.to_date }}</div>
+
+    <div class="meta">
+        📞 {{ leave.student_contact }} <br>
+        👪 {{ leave.parent_contact }}
+    </div>
+
+    <div class="badge 
+        {% if leave.status == 'Approved' %}approved
+        {% elif leave.status == 'Rejected' %}rejected
+        {% else %}pending{% endif %}">
+        {{ leave.status }}
+    </div>
+
+    <p style="margin-top:10px;font-size:13px;color:#cbd5e1;">
+        {{ leave.reason }}
+    </p>
+
+    {% if leave.status == "Pending" %}
+    <div class="actions">
+        <button class="btn approve" onclick="updateStatus({{ leave.id }}, 'Approved')">Approve</button>
+        <button class="btn reject" onclick="updateStatus({{ leave.id }}, 'Rejected')">Reject</button>
+    </div>
+    {% endif %}
+
+</div>
+{% endfor %}
+
+</div>
+
+</div>
+
+<script>
+
+function updateStatus(id, status){
+    fetch("/update-leave-status/",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/x-www-form-urlencoded",
+            "X-CSRFToken":getCookie("csrftoken")
+        },
+        body:`leave_id=${id}&status=${status}`
+    })
+    .then(r=>r.json())
+    .then(res=>{
+        if(res.status==="success"){
+            location.reload();
+        }
+    });
+}
+
+function getCookie(name){
+    return document.cookie.split('; ')
+    .find(row=>row.startsWith(name+"="))
+    ?.split('=')[1];
+}
+
+document.getElementById("searchInput").addEventListener("input", function(){
+    let val = this.value.toLowerCase();
+    document.querySelectorAll(".leave-card").forEach(card=>{
+        card.style.display = card.innerText.toLowerCase().includes(val) ? "block" : "none";
+    });
+});
+
+function getTrendData() {
+    const cards = document.querySelectorAll(".leave-card");
+    const dateCounts = {};
+
+    cards.forEach(card => {
+        const text = card.innerText;
+        const regex = /\d{4}-\d{2}-\d{2}/g;
+        const matches = text.match(regex);
+        if (matches && matches.length > 0) {
+            const date = matches[0];
+            dateCounts[date] = (dateCounts[date] || 0) + 1;
+        }
+    });
+
+    const dates = Object.keys(dateCounts).sort();
+    if (dates.length > 0) {
+        return { labels: dates, counts: dates.map(d => dateCounts[d]) };
+    }
+    
+    // Default fallback (last 5 days)
+    const today = new Date();
+    const pastLabels = [];
+    const pastCounts = [];
+    for (let i = 4; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(today.getDate() - i);
+        pastLabels.push(d.toISOString().split('T')[0]);
+        pastCounts.push(0);
+    }
+    return { labels: pastLabels, counts: pastCounts };
+}
+
+function getStatusData() {
+    const cards = document.querySelectorAll(".leave-card");
+    let pending = 0, approved = 0, rejected = 0;
+    
+    cards.forEach(card => {
+        const badge = card.querySelector(".badge");
+        if (badge) {
+            const t = badge.innerText.trim().toLowerCase();
+            if (t.includes("pending")) pending++;
+            else if (t.includes("approved")) approved++;
+            else if (t.includes("rejected")) rejected++;
+        }
+    });
+    return {
+        labels: ['Pending', 'Approved', 'Rejected'],
+        counts: [pending, approved, rejected]
+    };
+}
+
+/* CHARTS */
+document.addEventListener("DOMContentLoaded", function () {
+    let trendLabels = {{ trend_labels|default:"[]"|safe }};
+    let trendCounts = {{ trend_counts|default:"[]"|safe }};
+
+    if (trendLabels.length === 0 || trendCounts.length === 0) {
+        const trendData = getTrendData();
+        trendLabels = trendData.labels;
+        trendCounts = trendData.counts;
+    }
+
+    let statusLabels = {{ status_labels|default:"[]"|safe }};
+    let statusCounts = {{ status_counts|default:"[]"|safe }};
+
+    if (statusLabels.length === 0 || statusCounts.length === 0) {
+        const statusData = getStatusData();
+        statusLabels = statusData.labels;
+        statusCounts = statusData.counts;
+    }
+
+    // Update dynamically on UI
+    document.getElementById("total-count").innerText = statusCounts.reduce((a, b) => parseInt(a) + parseInt(b), 0) || document.querySelectorAll('.leave-card').length;
+    document.getElementById("pending-count").innerText = statusCounts[0] || 0;
+    document.getElementById("approved-count").innerText = statusCounts[1] || 0;
+    document.getElementById("rejected-count").innerText = statusCounts[2] || 0;
+
+    new Chart(document.getElementById("trendChart"), {
+        type: "line",
+        data: {
+            labels: trendLabels,
+            datasets: [{
+                label: 'Leave Applications Trend',
+                data: trendCounts,
+                borderColor: "#e50914",
+                backgroundColor: "rgba(229, 9, 20, 0.12)",
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    ticks: { color: '#94a3b8' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#94a3b8' }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: { color: '#94a3b8', font: { size: 11 } }
+                }
+            }
+        }
+    });
+
+    new Chart(document.getElementById("statusChart"), {
+        type: "doughnut",
+        data: {
+            labels: statusLabels,
+            datasets: [{
+                data: statusCounts,
+                backgroundColor: ["#fbbf24", "#22c55e", "#ef4444"],
+                borderColor: '#050814',
+                borderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#94a3b8', font: { size: 11 } }
+                }
+            }
+        }
+    });
+});
+</script>
+
+{% endblock %}

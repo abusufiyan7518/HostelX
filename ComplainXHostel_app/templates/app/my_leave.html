@@ -1,0 +1,318 @@
+{% extends "app/base.html" %}
+{% block content %}
+
+<style>
+
+/* ================= THEME ================= */
+:root{
+    --bg:#060913;
+    --panel:rgba(17,24,39,0.55);
+    --stroke:rgba(255,255,255,0.06);
+    --text:#e5e7eb;
+    --muted:#94a3b8;
+    --netflix:#e50914;
+    --green:#22c55e;
+    --yellow:#fbbf24;
+    --red:#ef4444;
+}
+
+/* ================= BACKGROUND ================= */
+body{
+    margin:0;
+    font-family:Inter, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+}
+
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(229,9,20,0.15), transparent 45%),
+        radial-gradient(circle at 85% 75%, rgba(99,102,241,0.18), transparent 50%);
+    z-index:-1;
+}
+
+/* ================= HEADER ================= */
+.header{
+    padding:20px 30px 0;
+}
+
+.header h2{
+    font-size:24px;
+    font-weight:700;
+    letter-spacing:0.3px;
+}
+
+/* ================= ANALYTICS ================= */
+.analytics{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:14px;
+    padding:20px 30px;
+}
+
+.stat-card{
+    padding:16px;
+    border-radius:16px;
+
+    background:var(--panel);
+    border:1px solid var(--stroke);
+    backdrop-filter:blur(16px);
+
+    transition:0.25s;
+}
+
+.stat-card:hover{
+    transform:translateY(-6px);
+    border-color:var(--netflix);
+}
+
+.stat-title{
+    font-size:11px;
+    color:var(--muted);
+}
+
+.stat-value{
+    font-size:22px;
+    font-weight:700;
+    margin-top:6px;
+}
+
+.blue{color:#60a5fa;}
+.green{color:var(--green);}
+.yellow{color:var(--yellow);}
+.red{color:var(--red);}
+
+/* ================= PROGRESS ================= */
+.progress{
+    height:6px;
+    background:#111827;
+    border-radius:999px;
+    margin-top:10px;
+    overflow:hidden;
+}
+
+.progress-fill{
+    height:100%;
+    background:linear-gradient(90deg,var(--netflix),#ff4d4d);
+}
+
+/* ================= TIMELINE (NETFLIX FEED STYLE) ================= */
+.timeline{
+    padding:10px 30px 40px;
+    position:relative;
+}
+
+/* vertical line */
+.timeline::before{
+    content:"";
+    position:absolute;
+    left:42px;
+    top:0;
+    bottom:0;
+    width:2px;
+    background:linear-gradient(var(--netflix), transparent);
+}
+
+/* CARD = Netflix content tile */
+.card{
+    margin:16px 0;
+    margin-left:70px;
+
+    padding:18px;
+    border-radius:16px;
+
+    background:var(--panel);
+    border:1px solid var(--stroke);
+
+    backdrop-filter:blur(16px);
+
+    transition:0.25s;
+    position:relative;
+}
+
+.card:hover{
+    transform:translateX(6px) scale(1.01);
+    border-color:var(--netflix);
+}
+
+/* DOT */
+.dot{
+    position:absolute;
+    left:-42px;
+    top:22px;
+    width:14px;
+    height:14px;
+    border-radius:50%;
+}
+
+/* STATUS DOT COLORS */
+.pending{ background:var(--yellow); }
+.approved{ background:var(--green); }
+.rejected{ background:var(--red); }
+
+/* pulse only pending */
+.dot.pending{
+    animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(251,191,36,0.6);}
+    70%{box-shadow:0 0 0 10px rgba(251,191,36,0);}
+    100%{box-shadow:0 0 0 0 rgba(251,191,36,0);}
+}
+
+/* TOP ROW */
+.row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+/* TITLE */
+strong{
+    font-size:14px;
+}
+
+/* BADGE */
+.badge{
+    font-size:11px;
+    padding:5px 10px;
+    border-radius:999px;
+    font-weight:600;
+}
+
+.badge.pending{ background:rgba(251,191,36,0.15); color:var(--yellow); }
+.badge.approved{ background:rgba(34,197,94,0.15); color:var(--green); }
+.badge.rejected{ background:rgba(239,68,68,0.15); color:var(--red); }
+
+/* META */
+.meta{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:8px;
+}
+
+/* REASON (like description under Netflix card) */
+.reason{
+    font-size:13px;
+    margin-top:10px;
+    color:#cbd5e1;
+    line-height:1.5;
+}
+
+/* DATE */
+.date{
+    font-size:11px;
+    color:#64748b;
+    margin-top:8px;
+}
+
+/* EMPTY */
+.empty{
+    text-align:center;
+    padding:60px;
+    color:var(--muted);
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+    .timeline::before{left:20px;}
+    .card{margin-left:40px;}
+}
+
+</style>
+
+<!-- HEADER -->
+<div class="header">
+    <h2>📺 Leave History</h2>
+</div>
+
+<!-- ANALYTICS -->
+<div class="analytics">
+
+    <div class="stat-card">
+        <div class="stat-title">Total Leaves</div>
+        <div class="stat-value blue">{{ total }}</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-title">Approved</div>
+        <div class="stat-value green">{{ approved }}</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-title">Pending</div>
+        <div class="stat-value yellow">{{ pending }}</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-title">Rejected</div>
+        <div class="stat-value red">{{ rejected }}</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-title">Approval Rate</div>
+        <div class="stat-value green">{{ approval_rate }}%</div>
+
+        <div class="progress">
+            <div class="progress-fill" style="width:{{ approval_rate }}%"></div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- TIMELINE -->
+<div class="timeline">
+
+{% for leave in leaves %}
+
+<div class="card">
+
+    <div class="dot
+        {% if leave.status == 'Approved' %}approved
+        {% elif leave.status == 'Rejected' %}rejected
+        {% else %}pending{% endif %}">
+    </div>
+
+    <div class="row">
+
+        <strong>{{ leave.from_date }} → {{ leave.to_date }}</strong>
+
+        <span class="badge
+            {% if leave.status == 'Approved' %}approved
+            {% elif leave.status == 'Rejected' %}rejected
+            {% else %}pending{% endif %}">
+            {{ leave.status }}
+        </span>
+
+    </div>
+
+    <div class="meta">
+        📞 {{ leave.student_contact }} • 👨‍👩‍👦 {{ leave.parent_contact }}
+    </div>
+
+    <div class="reason">
+        "{{ leave.reason }}"
+    </div>
+
+    <div class="date">
+        Applied {{ leave.applied_at|date:"d M Y, h:i A" }}
+    </div>
+
+</div>
+
+{% empty %}
+
+<div class="empty">
+    No leave history yet
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endblock %}

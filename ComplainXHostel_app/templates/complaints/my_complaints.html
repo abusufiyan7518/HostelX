@@ -1,0 +1,289 @@
+{% extends 'app/base.html' %}
+{% block content %}
+
+<style>
+
+/* BACKGROUND */
+body{
+    background:#050814;
+    color:#e5e7eb;
+    font-family:Inter;
+}
+
+/* GLOW */
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(229,9,20,0.12), transparent 45%),
+        radial-gradient(circle at 80% 70%, rgba(99,102,241,0.15), transparent 50%);
+    z-index:-1;
+}
+
+/* PAGE */
+.page{
+    padding:26px;
+}
+
+/* HEADER */
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.header h2{
+    font-size:22px;
+    font-weight:700;
+}
+
+/* LIVE DOT */
+.live{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    color:#94a3b8;
+}
+
+.dot{
+    width:8px;
+    height:8px;
+    background:#22c55e;
+    border-radius:50%;
+    animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+    0%{transform:scale(1); opacity:1;}
+    50%{transform:scale(1.4); opacity:0.4;}
+    100%{transform:scale(1); opacity:1;}
+}
+
+/* STATS ROW (Netflix "top picks") */
+.stats{
+    display:flex;
+    gap:12px;
+    overflow-x:auto;
+    padding-bottom:10px;
+    margin-bottom:20px;
+}
+
+.stat{
+    min-width:180px;
+    padding:16px;
+    border-radius:16px;
+    background:#0f172a;
+    border:1px solid rgba(255,255,255,0.06);
+    transition:0.25s;
+    scroll-snap-align:start;
+}
+
+.stat:hover{
+    transform:scale(1.05);
+    border-color:#e50914;
+}
+
+.stat h3{
+    font-size:12px;
+    color:#94a3b8;
+}
+
+.stat p{
+    font-size:20px;
+    font-weight:700;
+    margin-top:6px;
+}
+
+/* COLORS */
+.total p{color:#60a5fa;}
+.pending p{color:#fbbf24;}
+.approved p{color:#22c55e;}
+.rejected p{color:#f87171;}
+
+/* SEARCH */
+.search-box{
+    width:100%;
+    padding:13px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,0.08);
+    background:#0f172a;
+    color:white;
+    outline:none;
+    margin-bottom:18px;
+}
+
+/* SECTION TITLE */
+.section-title{
+    font-size:13px;
+    color:#94a3b8;
+    margin-bottom:10px;
+}
+
+/* NETFLIX ROW */
+.row{
+    display:flex;
+    gap:12px;
+    overflow-x:auto;
+    padding-bottom:10px;
+}
+
+/* COMPLAINT CARD (Netflix thumbnail style) */
+.card{
+    min-width:260px;
+    padding:16px;
+    border-radius:16px;
+    background:#0f172a;
+    border:1px solid rgba(255,255,255,0.06);
+    transition:0.25s;
+    position:relative;
+}
+
+.card:hover{
+    transform:scale(1.06);
+    border-color:#e50914;
+    box-shadow:0 15px 40px rgba(229,9,20,0.15);
+}
+
+/* TITLE */
+.title{
+    font-weight:600;
+    font-size:14px;
+}
+
+/* BADGE */
+.badge{
+    font-size:11px;
+    padding:4px 10px;
+    border-radius:999px;
+    font-weight:600;
+    float:right;
+}
+
+.pending{background:rgba(245,158,11,0.15); color:#fbbf24;}
+.approved{background:rgba(34,197,94,0.15); color:#22c55e;}
+.rejected{background:rgba(239,68,68,0.15); color:#f87171;}
+
+/* DESCRIPTION */
+.desc{
+    margin-top:10px;
+    font-size:13px;
+    color:#cbd5e1;
+    line-height:1.5;
+    height:60px;
+    overflow:hidden;
+}
+
+/* DATE */
+.date{
+    margin-top:10px;
+    font-size:11px;
+    color:#64748b;
+}
+
+/* EMPTY */
+.empty{
+    text-align:center;
+    padding:40px;
+    color:#94a3b8;
+}
+
+/* HIDE SCROLLBAR */
+.row::-webkit-scrollbar,
+.stats::-webkit-scrollbar{
+    display:none;
+}
+
+</style>
+
+<div class="page">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h2>🎬 Complaints Feed</h2>
+
+        <div class="live">
+            <div class="dot"></div>
+            LIVE
+        </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats">
+
+        <div class="stat total">
+            <h3>Total</h3>
+            <p>{{ data|length }}</p>
+        </div>
+
+        <div class="stat pending">
+            <h3>Pending</h3>
+            <p>{{ pending_count|default:"0" }}</p>
+        </div>
+
+        <div class="stat approved">
+            <h3>Approved</h3>
+            <p>{{ approved_count|default:"0" }}</p>
+        </div>
+
+        <div class="stat rejected">
+            <h3>Rejected</h3>
+            <p>{{ rejected_count|default:"0" }}</p>
+        </div>
+
+    </div>
+
+    <!-- SEARCH -->
+    <input type="text" id="search" class="search-box" placeholder="Search complaints...">
+
+    <!-- ROW -->
+    <div class="section-title">All Complaints</div>
+
+    <div class="row">
+
+        {% for c in data %}
+
+        <div class="card complaint">
+
+            {% if c.status == 'Approved' %}
+                <span class="badge approved">Approved</span>
+            {% elif c.status == 'Rejected' %}
+                <span class="badge rejected">Rejected</span>
+            {% else %}
+                <span class="badge pending">Pending</span>
+            {% endif %}
+
+            <div class="title">{{ c.category }}</div>
+
+            <div class="desc">
+                {{ c.description }}
+            </div>
+
+            <div class="date">📅 {{ c.date }}</div>
+
+        </div>
+
+        {% empty %}
+        <div class="empty">No complaints found 🚫</div>
+        {% endfor %}
+
+    </div>
+
+</div>
+
+<script>
+document.getElementById("search").addEventListener("keyup", function() {
+    let value = this.value.toLowerCase();
+    let cards = document.querySelectorAll(".complaint");
+
+    cards.forEach(card => {
+        card.style.display = card.innerText.toLowerCase().includes(value)
+            ? "block"
+            : "none";
+    });
+});
+</script>
+
+{% endblock %}

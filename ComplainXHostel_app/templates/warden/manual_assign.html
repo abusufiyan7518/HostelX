@@ -1,0 +1,214 @@
+{% extends 'warden/base.html' %}
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+/* ================= CINEMATIC BACKGROUND ================= */
+body{
+    background:#060912;
+    color:#e5e7eb;
+    font-family:'Inter', sans-serif;
+    overflow-x:hidden;
+}
+
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(229,9,20,0.18), transparent 40%),
+        radial-gradient(circle at 85% 30%, rgba(99,102,241,0.22), transparent 45%),
+        radial-gradient(circle at 50% 90%, rgba(34,197,94,0.10), transparent 50%);
+    z-index:-1;
+}
+
+/* subtle grid overlay */
+body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size:70px 70px;
+    opacity:0.06;
+    z-index:-1;
+}
+
+/* ================= CONTAINER ================= */
+.container{
+    max-width:620px;
+    margin:auto;
+    padding:50px 20px;
+}
+
+/* ================= BACK LINK ================= */
+.back{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-bottom:18px;
+    font-size:13px;
+    color:#60a5fa;
+    text-decoration:none;
+    transition:0.2s;
+}
+
+.back:hover{
+    transform:translateX(-3px);
+    color:#93c5fd;
+}
+
+/* ================= MAIN CARD ================= */
+.card{
+    background:rgba(17,24,39,0.75);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:18px;
+    padding:26px;
+    backdrop-filter:blur(18px);
+    box-shadow:0 30px 90px rgba(0,0,0,0.65);
+    transition:0.3s;
+}
+
+.card:hover{
+    transform:translateY(-5px);
+    border-color:rgba(99,102,241,0.4);
+}
+
+/* ================= TITLE ================= */
+.title{
+    font-size:22px;
+    font-weight:700;
+    letter-spacing:0.3px;
+    margin-bottom:6px;
+}
+
+.subtitle{
+    font-size:12px;
+    color:#94a3b8;
+    margin-bottom:18px;
+}
+
+/* ================= STUDENT BOX ================= */
+.student-box{
+    padding:14px;
+    border-radius:14px;
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.08);
+    margin-bottom:18px;
+    font-size:14px;
+    transition:0.2s;
+}
+
+.student-box:hover{
+    border-color:#e50914;
+    background:rgba(99,102,241,0.08);
+}
+
+/* ================= LABEL ================= */
+label{
+    font-size:12px;
+    color:#9ca3af;
+}
+
+/* ================= SELECT ================= */
+select{
+    width:100%;
+    padding:12px;
+    margin-top:6px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,0.08);
+    background:#0f172a;
+    color:#e5e7eb;
+    font-size:14px;
+    outline:none;
+    transition:0.2s;
+}
+
+select:focus{
+    border-color:#e50914;
+    box-shadow:0 0 0 3px rgba(99,102,241,0.15);
+}
+
+/* ================= BUTTON (NETFLIX BLUE GLOW) ================= */
+.btn{
+    margin-top:18px;
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(135deg,#e50914,#6366f1);
+    color:white;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.25s;
+    box-shadow:0 10px 25px rgba(99,102,241,0.25);
+}
+
+.btn:hover{
+    transform:translateY(-2px);
+    background:#b20710;
+    box-shadow:0 15px 35px rgba(99,102,241,0.35);
+}
+
+/* ================= EMPTY ================= */
+.empty{
+    padding:14px;
+    border-radius:12px;
+    background:rgba(239,68,68,0.12);
+    color:#f87171;
+    font-size:13px;
+    border:1px solid rgba(239,68,68,0.2);
+}
+
+</style>
+
+<div class="container">
+
+<a href="{% url 'warden_students' %}" class="back">← Back to Dashboard</a>
+
+<div class="card">
+
+    <div class="title">Assign Room</div>
+    <div class="subtitle">HostelX allocation panel for Student Management</div>
+
+    <div class="student-box">
+        👤 <b>{{ student.user.username }}</b>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <label>Select Room</label>
+
+        {% if rooms %}
+
+        <select name="room_id" required>
+            <option value="">-- Select Room --</option>
+
+            {% for room in rooms %}
+            <option value="{{ room.id }}">
+                Room {{ room.room_number }}
+                ({{ room.occupants | default:0 }}/{{ room.capacity }} beds
+                • {{ room.is_ac|yesno:"AC,Non-AC" }})
+            </option>
+            {% endfor %}
+        </select>
+
+        <button class="btn">Assign Room</button>
+
+        {% else %}
+        <div class="empty">
+            No rooms available
+        </div>
+        {% endif %}
+
+    </form>
+
+</div>
+
+</div>
+
+{% endblock %}

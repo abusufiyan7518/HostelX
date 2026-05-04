@@ -1,0 +1,368 @@
+{% extends 'app/base.html' %}
+{% block content %}
+
+<style>
+
+/* ================= THEME ================= */
+:root{
+    --bg:#0b0f1a;
+    --panel:rgba(20,25,40,0.6);
+    --stroke:rgba(255,255,255,0.06);
+    --text:#e5e7eb;
+    --muted:#94a3b8;
+    --accent:#e50914; /* Netflix red */
+    --blue:#6366f1;
+}
+
+/* ================= BASE ================= */
+.page{
+    min-height:100vh;
+    padding:32px;
+    background:var(--bg);
+    color:var(--text);
+    font-family:Inter, sans-serif;
+    position:relative;
+    overflow:hidden;
+}
+
+/* cinematic glow background */
+.page::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(229,9,20,0.12), transparent 45%),
+        radial-gradient(circle at 80% 70%, rgba(99,102,241,0.15), transparent 50%);
+    z-index:-1;
+}
+
+/* ================= HEADER ================= */
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:26px;
+}
+
+.header h2{
+    font-size:26px;
+    font-weight:700;
+    letter-spacing:-0.3px;
+}
+
+.badge-live{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    color:var(--muted);
+}
+
+.dot{
+    width:8px;
+    height:8px;
+    background:#22c55e;
+    border-radius:50%;
+    animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(34,197,94,0.5);}
+    70%{box-shadow:0 0 0 10px rgba(34,197,94,0);}
+}
+
+/* ================= GRID ================= */
+.grid{
+    display:grid;
+    grid-template-columns:1.2fr 0.8fr;
+    gap:20px;
+}
+
+/* ================= CARDS ================= */
+.card{
+    background:var(--panel);
+    border:1px solid var(--stroke);
+    border-radius:18px;
+    padding:22px;
+    backdrop-filter:blur(16px);
+    transition:0.3s ease;
+}
+
+.card:hover{
+    transform:translateY(-6px);
+    border-color:rgba(229,9,20,0.5);
+    box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+
+/* ================= HERO STRIP ================= */
+.hero{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:16px;
+    border-radius:14px;
+    background:linear-gradient(135deg, rgba(229,9,20,0.12), rgba(99,102,241,0.10));
+    border:1px solid var(--stroke);
+    margin-bottom:18px;
+}
+
+/* ================= KPI ================= */
+.kpi-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+    margin-bottom:14px;
+}
+
+.kpi{
+    padding:14px;
+    border-radius:14px;
+    background:rgba(255,255,255,0.03);
+    border:1px solid var(--stroke);
+    text-align:center;
+    transition:0.25s;
+}
+
+.kpi:hover{
+    transform:scale(1.05);
+    border-color:var(--accent);
+}
+
+.kpi h4{
+    font-size:11px;
+    color:var(--muted);
+}
+
+.kpi p{
+    font-size:20px;
+    font-weight:700;
+    margin-top:6px;
+}
+
+/* ================= STATUS ================= */
+.badge{
+    padding:5px 12px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:600;
+}
+
+.full{background:rgba(239,68,68,0.15); color:#ef4444;}
+.almost{background:rgba(245,158,11,0.15); color:#fbbf24;}
+.free{background:rgba(34,197,94,0.15); color:#22c55e;}
+
+/* ================= PROGRESS ================= */
+.progress{
+    height:10px;
+    background:#111827;
+    border-radius:999px;
+    overflow:hidden;
+    border:1px solid var(--stroke);
+}
+
+.progress-fill{
+    height:100%;
+    background:linear-gradient(90deg,var(--accent),var(--blue));
+}
+
+/* ================= ROOMMATE CARDS ================= */
+.list{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    margin-top:12px;
+}
+
+.user{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:14px;
+    border-radius:14px;
+    background:rgba(255,255,255,0.03);
+    border:1px solid var(--stroke);
+    cursor:pointer;
+    transition:0.25s;
+}
+
+.user:hover{
+    transform:translateX(6px);
+    border-color:var(--accent);
+    background:rgba(229,9,20,0.06);
+}
+
+/* avatar */
+.avatar{
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    overflow:hidden;
+    background:linear-gradient(135deg,#e50914,#6366f1);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:600;
+}
+
+.avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+/* text */
+.info b{font-size:14px;}
+.info small{
+    display:block;
+    font-size:12px;
+    color:var(--muted);
+}
+
+/* ================= MODAL ================= */
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.7);
+    justify-content:center;
+    align-items:center;
+}
+
+.modal-box{
+    width:360px;
+    padding:22px;
+    border-radius:16px;
+    background:#0b1220;
+    border:1px solid var(--stroke);
+}
+
+/* responsive */
+@media(max-width:900px){
+    .grid{grid-template-columns:1fr;}
+    .kpi-grid{grid-template-columns:1fr;}
+}
+
+</style>
+
+<div class="page">
+
+    <div class="header">
+        <h2>🏠 Room Details</h2>
+
+        <div class="badge-live">
+            <div class="dot"></div>
+            Live System
+        </div>
+    </div>
+
+    <div class="grid">
+
+        <!-- LEFT -->
+        <div class="card">
+
+            <div class="hero">
+                <div>
+                    <h3>Room Overview</h3>
+                    <small style="color:#94a3b8;">Your Roomates Details Here</small>
+                </div>
+
+                {% if total_in_room == 3 %}
+                    <span class="badge full">FULL</span>
+                {% elif total_in_room == 2 %}
+                    <span class="badge almost">ALMOST</span>
+                {% else %}
+                    <span class="badge free">AVAILABLE</span>
+                {% endif %}
+            </div>
+
+            <div class="kpi-grid">
+
+                <div class="kpi">
+                    <h4>Room</h4>
+                    <p>{{ room_number }}</p>
+                </div>
+
+                <div class="kpi">
+                    <h4>Occupancy</h4>
+                    <p>{{ total_in_room }}/3</p>
+                </div>
+
+                <div class="kpi">
+                    <h4>Fill</h4>
+                    <p>{{ percent }}%</p>
+                </div>
+
+            </div>
+
+            <div class="progress">
+                <div class="progress-fill" style="width:{{ percent }}%"></div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT -->
+        <div class="card">
+
+            <h3>Roommates</h3>
+
+            <div class="list">
+
+                {% for r in roommates %}
+                <div class="user"
+                     onclick="openModal('{{ r.user.username }}','{{ r.course }}','{{ r.contact }}','{{ r.user.email }}')">
+
+                    <div class="avatar">
+                        {% if r.profile_pic %}
+                            <img src="{{ r.profile_pic.url }}">
+                        {% else %}
+                            {{ r.user.username|first|upper }}
+                        {% endif %}
+                    </div>
+
+                    <div class="info">
+                        <b>{{ r.user.username }}</b>
+                        <small>{{ r.course }}</small>
+                        <small>{{ r.contact }}</small>
+                    </div>
+
+                </div>
+                {% empty %}
+                    <p style="color:#94a3b8;">No roommates assigned</p>
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+    <div class="modal-box">
+        <span onclick="closeModal()" style="float:right;cursor:pointer;">✕</span>
+        <h3>Profile</h3>
+
+        <p><b>Name:</b> <span id="m-name"></span></p>
+        <p><b>Course:</b> <span id="m-course"></span></p>
+        <p><b>Contact:</b> <span id="m-contact"></span></p>
+        <p><b>Email:</b> <span id="m-email"></span></p>
+    </div>
+</div>
+
+<script>
+function openModal(n,c,co,e){
+    document.getElementById("modal").style.display="flex";
+    document.getElementById("m-name").innerText=n;
+    document.getElementById("m-course").innerText=c;
+    document.getElementById("m-contact").innerText=co;
+    document.getElementById("m-email").innerText=e;
+}
+
+function closeModal(){
+    document.getElementById("modal").style.display="none";
+}
+</script>
+
+{% endblock %}

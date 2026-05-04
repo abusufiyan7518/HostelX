@@ -1,0 +1,593 @@
+{% extends 'warden/base.html' %}
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+/* ================= NETFLIX BASE ================= */
+body{
+    background:#050814;
+    color:#e5e7eb;
+    font-family:Inter, sans-serif;
+}
+
+/* cinematic glow background */
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(229,9,20,0.12), transparent 40%),
+        radial-gradient(circle at 80% 30%, rgba(99,102,241,0.18), transparent 45%),
+        radial-gradient(circle at 50% 80%, rgba(34,197,94,0.10), transparent 50%);
+    z-index:-1;
+}
+
+body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size:70px 70px;
+    opacity:0.06;
+    z-index:-1;
+}
+
+/* ================= PAGE ================= */
+.page{
+    padding:28px;
+    max-width:1350px;
+    margin:auto;
+    color:#e5e7eb;
+    font-family:Inter, sans-serif;
+}
+
+/* HEADER */
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:22px;
+}
+
+.header h2{
+    font-size:26px;
+    font-weight:700;
+}
+
+.header p{
+    font-size:13px;
+    color:#94a3b8;
+}
+
+/* SEARCH & CONTROLS */
+.search{
+    padding:10px 14px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,0.08);
+    background:#0f172a;
+    color:white;
+    outline:none;
+    transition:0.2s;
+}
+
+.search:focus{
+    border-color:#e50914;
+    box-shadow:0 0 0 3px rgba(229,9,20,0.2);
+}
+
+select{
+    padding:10px 16px;
+    border-radius:12px;
+    background:#0f172a;
+    color:white;
+    border:1px solid rgba(255,255,255,0.08);
+    outline:none;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+select:focus{
+    border-color:#e50914;
+}
+
+/* ================= KPI (NETFLIX TILES) ================= */
+.kpi{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+    margin-bottom:22px;
+}
+
+.kpi-box{
+    padding:16px;
+    border-radius:18px;
+    background:rgba(17,24,39,0.7);
+    border:1px solid rgba(255,255,255,0.08);
+    backdrop-filter:blur(12px);
+    transition:0.25s;
+    position:relative;
+    overflow:hidden;
+}
+
+.kpi-box::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(120deg,transparent,rgba(229,9,20,0.05),transparent);
+    opacity:0;
+    transition:0.3s;
+}
+
+.kpi-box:hover::before{
+    opacity:1;
+}
+
+.kpi-box:hover{
+    transform:translateY(-4px);
+    border-color:#e50914;
+}
+
+.kpi-box h4{
+    font-size:12px;
+    color:#94a3b8;
+    margin:0;
+}
+
+.kpi-box p{
+    font-size:24px;
+    font-weight:700;
+    margin-top:6px;
+    color:#f9fafb;
+}
+
+/* ================= CHARTS SECTION ================= */
+.chart-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:16px;
+    margin-bottom:22px;
+}
+
+.chart-card{
+    background:rgba(17,24,39,0.65);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:18px;
+    padding:20px;
+    backdrop-filter:blur(14px);
+    min-height:280px;
+}
+
+/* ================= GRID ================= */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(340px,1fr));
+    gap:16px;
+}
+
+/* ================= CARD (NETFLIX TILE) ================= */
+.card{
+    background:rgba(17,24,39,0.65);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:18px;
+    padding:18px;
+    transition:0.25s;
+    backdrop-filter:blur(14px);
+}
+
+.card:hover{
+    transform:translateY(-6px);
+    border-color:#e50914;
+    box-shadow:0 25px 60px rgba(0,0,0,0.6);
+}
+
+/* USER */
+.user{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:10px;
+}
+
+.avatar{
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    overflow:hidden;
+    background:linear-gradient(135deg,#e50914,#b91c1c);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-weight:600;
+    box-shadow:0 10px 25px rgba(229,9,20,0.3);
+}
+
+.avatar-img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.meta{
+    font-size:12px;
+    color:#94a3b8;
+}
+
+/* AMOUNT */
+.amount{
+    font-size:18px;
+    font-weight:700;
+    margin-top:6px;
+}
+
+.amount span{
+    color:#64748b;
+}
+
+/* PROGRESS BAR (NETFLIX STYLE) */
+.progress{
+    height:8px;
+    background:#1f2937;
+    border-radius:999px;
+    overflow:hidden;
+    margin-top:10px;
+}
+
+.fill{
+    height:100%;
+    background:linear-gradient(90deg,#e50914,#3b82f6);
+}
+
+/* BADGES */
+.badge{
+    display:inline-block;
+    padding:5px 10px;
+    border-radius:999px;
+    font-size:11px;
+    margin-top:10px;
+    font-weight:600;
+}
+
+.paid{
+    background:rgba(34,197,94,0.15);
+    color:#22c55e;
+    border:1px solid rgba(34,197,94,0.3);
+}
+
+.partial{
+    background:rgba(245,158,11,0.15);
+    color:#fbbf24;
+    border:1px solid rgba(245,158,11,0.3);
+}
+
+.due{
+    background:rgba(239,68,68,0.15);
+    color:#ef4444;
+    border:1px solid rgba(239,68,68,0.3);
+}
+
+/* PAYMENT ROWS */
+.payment{
+    margin-top:8px;
+    padding:10px;
+    border-radius:12px;
+    background:#0f172a;
+    border:1px solid rgba(255,255,255,0.05);
+    font-size:12px;
+    display:flex;
+    justify-content:space-between;
+    transition:0.2s;
+}
+
+.payment:hover{
+    background:#111827;
+}
+
+/* EMPTY */
+.empty{
+    text-align:center;
+    padding:20px;
+    color:#64748b;
+}
+
+@media(max-width:1024px) {
+    .chart-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<div class="page">
+
+<div class="header">
+    <div>
+        <h2>💰 Fee Analytics Dashboard</h2>
+        <p>HostelX financial tracking system</p>
+    </div>
+
+    <div style="display:flex; gap:12px;">
+        <input type="text" class="search" id="searchInput" placeholder="Search student..." onkeyup="filterCards(this)">
+        <select onchange="filterType(this)">
+            <option value="">All Rooms</option>
+            <option value="ac">AC Rooms</option>
+            <option value="nonac">Non-AC Rooms</option>
+        </select>
+    </div>
+</div>
+
+<div class="kpi">
+    <div class="kpi-box">
+        <h4>Total Students</h4>
+        <p>{{ total_students|default:0 }}</p>
+    </div>
+    <div class="kpi-box">
+        <h4>Total Collected</h4>
+        <p>₹{{ total_collected|default:0 }}</p>
+    </div>
+    <div class="kpi-box">
+        <h4>Total Pending</h4>
+        <p>₹{{ total_pending|default:0 }}</p>
+    </div>
+    <div class="kpi-box">
+        <h4>Recovery Rate</h4>
+        <p>{{ recovery|default:0 }}%</p>
+    </div>
+</div>
+
+<div class="chart-grid">
+    <div class="chart-card">
+        <h4 style="color:#94a3b8; margin-bottom:12px; font-size:13px; font-weight: 500;">Financial Breakdown Status</h4>
+        <div style="height:200px;">
+            <canvas id="feeStatusChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="chart-card">
+        <h4 style="color:#94a3b8; margin-bottom:12px; font-size:13px; font-weight: 500;">Collection Overview</h4>
+        <div style="height:200px;">
+            <canvas id="collectionChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <h4 style="color:#94a3b8; margin-bottom:12px; font-size:13px; font-weight: 500;">Monthly Fee Collections</h4>
+        <div style="height:200px;">
+            <canvas id="monthlyChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="grid" id="studentList">
+{% for item in fee_data %}
+<div class="card">
+    <div class="user">
+        <div class="avatar">
+            {% if item.student.profile_pic %}
+                <img src="{{ item.student.profile_pic.url }}" class="avatar-img">
+            {% else %}
+                {{ item.student.user.username|first|upper }}
+            {% endif %}
+        </div>
+
+        <div>
+            <h3>{{ item.student.user.username }}</h3>
+            <div class="meta">
+                🏠 {% if item.student.room %}
+                    Room {{ item.student.room.room_number }}
+                {% else %}
+                    Not Assigned
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="amount">
+        ₹{{ item.paid }} <span>/ ₹{{ item.total_fee }}</span>
+    </div>
+
+    <div class="progress">
+        <div class="fill" style="width:{{ item.percent }}%"></div>
+    </div>
+
+    {% if item.remaining == 0 %}
+        <span class="badge paid">FULLY PAID</span>
+    {% elif item.paid == 0 %}
+        <span class="badge due">DUE</span>
+    {% else %}
+        <span class="badge partial">PARTIAL</span>
+    {% endif %}
+
+    <p style="margin-top:12px;color:#94a3b8;font-size:12px;">
+        Recent Transactions
+    </p>
+
+    <div class="transactions-container">
+    {% for p in item.payments|slice:":3" %}
+        <div class="payment">
+            <span>₹{{ p.amount }} • {{ p.method|title }}</span>
+            <span style="color:#64748b;">{{ p.created_at|date:"d M Y" }}</span>
+        </div>
+    {% empty %}
+        <p class="empty">No payment records</p>
+    {% endfor %}
+    </div>
+</div>
+{% endfor %}
+</div>
+
+</div>
+
+<script>
+function filterCards(input){
+    let val = input.value.toLowerCase();
+    document.querySelectorAll(".card").forEach(card=>{
+        let name = card.querySelector("h3").innerText.toLowerCase();
+        card.style.display = name.includes(val) ? "block" : "none";
+    });
+}
+
+function filterType(select){
+    let val = select.value;
+    let url = new URL(window.location.href);
+    if(val){
+        url.searchParams.set("type", val);
+    } else {
+        url.searchParams.delete("type");
+    }
+    window.location.href = url.toString();
+}
+
+function getMonthlyData() {
+    let payments = document.querySelectorAll('.payment');
+    let monthlyTotals = {};
+    
+    payments.forEach(p => {
+        let text = p.innerText;
+        let amtMatch = text.match(/₹([\d,]+)/);
+        let dateMatch = text.match(/\d{1,2}\s[A-Za-z]{3}\s\d{4}/);
+        
+        if (amtMatch && dateMatch) {
+            let amount = parseFloat(amtMatch[1].replace(/,/g, ''));
+            let dateStr = dateMatch[0];
+            let parts = dateStr.split(' ');
+            let monthYear = parts[1] + ' ' + parts[2];
+            
+            monthlyTotals[monthYear] = (monthlyTotals[monthYear] || 0) + amount;
+        }
+    });
+
+    let labels = Object.keys(monthlyTotals).reverse();
+    let data = labels.map(l => monthlyTotals[l]);
+
+    if (labels.length === 0) {
+        // Fallback for demonstration
+        labels = ['Jan 2026', 'Feb 2026', 'Mar 2026', 'Apr 2026', 'May 2026'];
+        data = [0, 0, 0, 0, 0];
+    }
+    return { labels, data };
+}
+
+// Analytics Charts Integration
+document.addEventListener("DOMContentLoaded", function () {
+    // Doughnut Chart
+    const ctx1 = document.getElementById('feeStatusChart').getContext('2d');
+    
+    let totalCollected = parseFloat('{{ total_collected }}'.replace(/,/g, '') || 0);
+    let totalPending = parseFloat('{{ total_pending }}'.replace(/,/g, '') || 0);
+    let totalSum = parseFloat('{{ total_fee_sum }}'.replace(/,/g, '') || (totalCollected + totalPending));
+
+    new Chart(ctx1, {
+        type: 'doughnut',
+        data: {
+            labels: ['Collected', 'Pending'],
+            datasets: [{
+                data: [totalCollected, totalPending],
+                backgroundColor: ['rgba(34, 197, 94, 0.8)', 'rgba(229, 9, 20, 0.8)'],
+                borderColor: '#050814',
+                borderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#94a3b8', font: { family: 'Inter', size: 12 } }
+                }
+            }
+        }
+    });
+
+    // Bar Chart
+    const ctx2 = document.getElementById('collectionChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: ['Total Fee', 'Collected', 'Pending'],
+            datasets: [{
+                label: 'Amount in Rupees (₹)',
+                data: [totalSum, totalCollected, totalPending],
+                backgroundColor: [
+                    'rgba(99, 102, 241, 0.7)',
+                    'rgba(34, 197, 94, 0.7)',
+                    'rgba(229, 9, 20, 0.7)'
+                ],
+                borderColor: '#e5e7eb',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    ticks: { color: '#94a3b8' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#94a3b8' }
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+
+    // Monthly Chart
+    let monthlyLabels = {{ monthly_labels|default:"[]"|safe }};
+    let monthlyData = {{ monthly_data|default:"[]"|safe }};
+
+    if (monthlyLabels.length === 0 || monthlyData.length === 0) {
+        let stats = getMonthlyData();
+        monthlyLabels = stats.labels;
+        monthlyData = stats.data;
+    }
+
+    const ctx3 = document.getElementById('monthlyChart').getContext('2d');
+    new Chart(ctx3, {
+        type: 'line',
+        data: {
+            labels: monthlyLabels,
+            datasets: [{
+                label: 'Collection (₹)',
+                data: monthlyData,
+                borderColor: '#e50914',
+                backgroundColor: 'rgba(229, 9, 20, 0.15)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    ticks: { color: '#94a3b8' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#94a3b8' }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } }
+                }
+            }
+        }
+    });
+});
+</script>
+
+{% endblock %}

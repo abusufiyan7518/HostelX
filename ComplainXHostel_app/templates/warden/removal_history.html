@@ -1,0 +1,309 @@
+{% extends 'warden/base.html' %}
+{% block content %}
+
+<style>
+
+/* ================= NETFLIX DARK BASE ================= */
+body{
+    background:#0b0f1c;
+    color:#e5e7eb;
+}
+
+/* cinematic background */
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(229,9,20,0.18), transparent 45%),
+        radial-gradient(circle at 80% 60%, rgba(99,102,241,0.15), transparent 50%),
+        radial-gradient(circle at 50% 90%, rgba(34,197,94,0.10), transparent 55%);
+    z-index:-1;
+    pointer-events:none;
+}
+
+/* GRID LINES */
+body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size:80px 80px;
+    opacity:0.07;
+    z-index:-1;
+    pointer-events:none;
+}
+
+/* ================= CONTAINER ================= */
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:28px;
+}
+
+/* ================= HEADER ================= */
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.header-left{
+    display:flex;
+    flex-direction:column;
+}
+
+.header h2{
+    font-size:26px;
+    font-weight:700;
+    letter-spacing:0.3px;
+}
+
+.header small{
+    color:#94a3b8;
+}
+
+/* BUTTONS */
+.btn{
+    padding:9px 14px;
+    border-radius:10px;
+    font-size:13px;
+    border:none;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.btn-back{
+    background:rgba(255,255,255,0.06);
+    color:#e5e7eb;
+    border:1px solid rgba(255,255,255,0.08);
+}
+
+.btn-back:hover{
+    transform:translateY(-2px);
+    border-color:#e50914;
+    background:rgba(229,9,20,0.12);
+}
+
+/* SEARCH */
+.search-box{
+    padding:10px 14px;
+    border-radius:10px;
+    background:#0f172a;
+    border:1px solid rgba(255,255,255,0.08);
+    color:white;
+    outline:none;
+}
+
+.search-box:focus{
+    border-color:#e50914;
+    box-shadow:0 0 0 3px rgba(229,9,20,0.15);
+}
+
+/* ================= CARD ================= */
+.card{
+    background:rgba(17,24,39,0.75);
+    border-radius:18px;
+    border:1px solid rgba(255,255,255,0.06);
+    overflow:hidden;
+    backdrop-filter:blur(16px);
+    box-shadow:0 25px 70px rgba(0,0,0,0.55);
+}
+
+/* ================= TABLE ================= */
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    padding:14px;
+    font-size:11px;
+    color:#94a3b8;
+    text-transform:uppercase;
+    letter-spacing:0.6px;
+    background:rgba(255,255,255,0.02);
+}
+
+td{
+    padding:14px;
+    border-top:1px solid rgba(255,255,255,0.06);
+    font-size:14px;
+}
+
+/* ROW HOVER (NETFLIX FEEL) */
+tr{
+    transition:0.2s;
+}
+
+tr:hover{
+    background:rgba(229,9,20,0.05);
+}
+
+/* ================= USER ================= */
+.user{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+/* AVATAR */
+.avatar{
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    overflow:hidden;
+    background:linear-gradient(135deg,#e50914,#6366f1);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:white;
+    font-weight:600;
+    box-shadow:0 6px 18px rgba(229,9,20,0.25);
+}
+
+.avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+/* NAME STYLE */
+.user span{
+    font-weight:500;
+}
+
+/* ================= BADGE ================= */
+.badge{
+    padding:5px 12px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:600;
+    background:rgba(239,68,68,0.12);
+    color:#ef4444;
+    border:1px solid rgba(239,68,68,0.25);
+}
+
+/* EMPTY */
+.empty{
+    text-align:center;
+    padding:20px;
+    color:#94a3b8;
+}
+
+/* GLASS EFFECT ROWS */
+tbody tr{
+    transition:0.2s;
+}
+
+tbody tr:hover td{
+    color:#fff;
+}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+    .container{
+        padding:16px;
+    }
+
+    th,td{
+        font-size:12px;
+        padding:10px;
+    }
+}
+
+</style>
+
+<div class="container">
+
+<div class="header">
+    <div class="header-left">
+        <h2>Removal History</h2>
+        <small>Only currently removed students</small>
+    </div>
+
+    <div class="header-actions">
+        <a href="{% url 'warden_students' %}" class="btn btn-back">
+            ← Back
+        </a>
+
+        <input type="text" id="search" class="search-box" placeholder="Search...">
+    </div>
+</div>
+
+<div class="card">
+
+<table id="table">
+
+<thead>
+<tr>
+    <th>Student</th>
+    <th>Removed By</th>
+    <th>Date</th>
+    <th>Reason</th>
+    <th>Status</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for log in logs %}
+
+<tr>
+
+<td>
+    <div class="user">
+
+        <div class="avatar">
+            {% if log.student.profile_pic %}
+                <img src="{{ log.student.profile_pic.url }}">
+            {% else %}
+                {{ log.student.user.username|first|upper }}
+            {% endif %}
+        </div>
+
+        <span>{{ log.student.user.username }}</span>
+
+    </div>
+</td>
+
+<td>{{ log.removed_by.username }}</td>
+
+<td>{{ log.removed_at|date:"d M Y" }}</td>
+
+<td>{{ log.reason|default:"-" }}</td>
+
+<td>
+    <span class="badge">Removed</span>
+</td>
+
+</tr>
+
+{% empty %}
+<tr>
+    <td colspan="5" class="empty">No removed students</td>
+</tr>
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<script>
+document.getElementById("search").addEventListener("input", function(){
+    let val = this.value.toLowerCase();
+
+    document.querySelectorAll("#table tbody tr").forEach(row=>{
+        row.style.display = row.innerText.toLowerCase().includes(val) ? "" : "none";
+    });
+});
+</script>
+
+{% endblock %}

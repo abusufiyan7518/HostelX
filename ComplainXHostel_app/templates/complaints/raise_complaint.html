@@ -1,0 +1,282 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+<title>Raise Ticket | SaaS</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+body{
+    margin:0;
+    background:#050814;
+    color:#e5e7eb;
+    font-family:Inter;
+    overflow-x:hidden;
+}
+
+/* NETFLIX BACKDROP */
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(229,9,20,0.10), transparent 45%),
+        radial-gradient(circle at 80% 70%, rgba(99,102,241,0.14), transparent 50%);
+    z-index:-1;
+}
+
+/* WRAPPER */
+.wrapper{
+    max-width:1000px;
+    margin:auto;
+    padding:40px 20px;
+}
+
+/* HEADER */
+.header h2{
+    font-size:28px;
+    font-weight:700;
+}
+
+.header p{
+    font-size:13px;
+    color:#94a3b8;
+}
+
+/* GLASS CARD */
+.card{
+    margin-top:20px;
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:18px;
+    padding:22px;
+    backdrop-filter:blur(16px);
+}
+
+/* INPUTS */
+.input{
+    width:100%;
+    padding:12px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,0.08);
+    background:#0f172a;
+    color:white;
+    outline:none;
+    margin-top:6px;
+}
+
+/* LABEL */
+label{
+    font-size:12px;
+    color:#94a3b8;
+}
+
+/* NETFLIX ROW STYLE */
+.row-title{
+    margin-top:18px;
+    font-size:13px;
+    color:#cbd5e1;
+    font-weight:600;
+}
+
+/* CATEGORY ROW (Netflix carousel feel) */
+.category-row{
+    display:flex;
+    gap:10px;
+    overflow-x:auto;
+    padding:10px 0;
+    scroll-snap-type:x mandatory;
+}
+
+/* CARD TILE */
+.cat{
+    min-width:140px;
+    padding:14px;
+    border-radius:14px;
+    background:#0f172a;
+    border:1px solid rgba(255,255,255,0.06);
+    cursor:pointer;
+    transition:0.25s;
+    scroll-snap-align:start;
+    text-align:center;
+    font-size:13px;
+}
+
+.cat:hover{
+    transform:scale(1.08);
+    border-color:#e50914;
+    box-shadow:0 10px 30px rgba(229,9,20,0.2);
+}
+
+.cat.active{
+    background:rgba(229,9,20,0.15);
+    border-color:#e50914;
+}
+
+/* SUB CATEGORY TAGS */
+.tags{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:10px;
+}
+
+.tag{
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:11px;
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.08);
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.tag:hover{
+    border-color:#22c55e;
+    transform:scale(1.05);
+}
+
+/* TEXTAREA */
+textarea{
+    height:120px;
+    resize:none;
+}
+
+/* BUTTON (Netflix style red CTA) */
+button{
+    width:100%;
+    margin-top:18px;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(135deg,#e50914,#7c3aed);
+    color:white;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+button:hover{
+    transform:translateY(-2px);
+    background:#b20710;
+    box-shadow:0 10px 30px rgba(229,9,20,0.25);
+}
+
+/* FILE */
+.file{
+    margin-top:12px;
+    font-size:12px;
+    color:#94a3b8;
+}
+
+/* SCROLLBAR HIDE (Netflix feel) */
+.category-row::-webkit-scrollbar{
+    display:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<div class="header">
+    <h2>🎬 Raise Complaint</h2>
+    <p>HostelX smart complaint routing system</p>
+</div>
+
+<div class="card">
+
+<form method="POST" enctype="multipart/form-data">
+{% csrf_token %}
+
+<label>Title</label>
+<input class="input" name="title" placeholder="What’s wrong?">
+
+<label style="margin-top:10px;">Description</label>
+<textarea class="input" name="description"></textarea>
+
+<!-- CATEGORY ROW -->
+<div class="row-title">Choose Category</div>
+
+<div class="category-row" id="categories">
+
+    <div class="cat" onclick="selectCat(this,'hostel')">🏠 Hostel</div>
+    <div class="cat" onclick="selectCat(this,'electricity')">⚡ Electricity</div>
+    <div class="cat" onclick="selectCat(this,'water')">💧 Water</div>
+    <div class="cat" onclick="selectCat(this,'food')">🍽️ Food</div>
+    <div class="cat" onclick="selectCat(this,'internet')">📶 Internet</div>
+    <div class="cat" onclick="selectCat(this,'security')">🔒 Security</div>
+    <div class="cat" onclick="selectCat(this,'cleaning')">🧹 Cleaning</div>
+    <div class="cat" onclick="selectCat(this,'medical')">🏥 Medical</div>
+    <div class="cat" onclick="selectCat(this,'admin')">🧾 Admin</div>
+
+</div>
+
+<input type="hidden" name="category" id="category">
+
+<!-- SUBCATEGORY -->
+<div class="row-title">Issue Type</div>
+<div class="tags" id="subtags"></div>
+
+<input type="hidden" name="issue_type" id="issue_type">
+
+<!-- FILE -->
+<div class="file">
+📎 Upload Image (optional)
+<input type="file" name="image">
+</div>
+
+<button type="submit">Submit Ticket</button>
+
+</form>
+
+</div>
+</div>
+
+<script>
+
+const data = {
+    hostel:["Room Damage","Bed Issue","Door Lock","Noise"],
+    electricity:["Fan","Light","Socket","Power Cut"],
+    water:["No Water","Leakage","Dirty Water","Low Pressure"],
+    food:["Quality","Late","Menu","Hygiene"],
+    internet:["Slow","No WiFi","Login","Router"],
+    security:["Gate","Entry","Night","CCTV"],
+    cleaning:["Room","Bathroom","Garbage","Pest"],
+    medical:["Emergency","Medicine","Doctor","Health"],
+    admin:["Fee","Room Change","Docs","Delay"]
+};
+
+function selectCat(el,cat){
+
+    document.querySelectorAll(".cat").forEach(c=>c.classList.remove("active"));
+    el.classList.add("active");
+
+    document.getElementById("category").value = cat;
+
+    let box = document.getElementById("subtags");
+    box.innerHTML = "";
+
+    data[cat].forEach(item=>{
+        let span = document.createElement("span");
+        span.className="tag";
+        span.innerText=item;
+
+        span.onclick=()=>{
+            document.querySelectorAll(".tag").forEach(t=>t.style.borderColor="rgba(255,255,255,0.08)");
+            span.style.borderColor="#e50914";
+            document.getElementById("issue_type").value=item;
+        }
+
+        box.appendChild(span);
+    });
+}
+
+</script>
+
+</body>
+</html>

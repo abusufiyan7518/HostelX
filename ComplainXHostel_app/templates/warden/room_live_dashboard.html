@@ -1,0 +1,202 @@
+{% extends 'warden/base.html' %}
+{% block content %}
+
+<style>
+
+/* GRID */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:15px;
+}
+
+/* CARD */
+.card{
+    background:#0f172a;
+    border-radius:16px;
+    padding:15px;
+    border:1px solid #1e293b;
+    transition:0.3s;
+}
+
+.card:hover{
+    transform:translateY(-4px);
+}
+
+/* 🔥 HEATMAP COLORS */
+.heat-low{border-left:5px solid #22c55e;}
+.heat-mid{border-left:5px solid #f59e0b;}
+.heat-high{border-left:5px solid #ef4444;}
+
+/* AC GLOW */
+.ac-room{
+    box-shadow:0 0 15px rgba(56,189,248,0.3);
+}
+
+/* HEADER */
+.card-header{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:10px;
+}
+
+/* BAR */
+.bar{
+    height:8px;
+    background:#1e293b;
+    border-radius:10px;
+    overflow:hidden;
+    margin:10px 0;
+}
+
+.fill{
+    height:100%;
+    background:#6366f1;
+}
+
+/* STUDENT */
+.student{
+    display:flex;
+    gap:10px;
+    margin:8px 0;
+    cursor:grab;
+    padding:6px;
+    border-radius:8px;
+}
+
+.student:hover{
+    background:#1e293b;
+}
+
+.student.dragging{
+    opacity:0.5;
+}
+
+/* AVATAR */
+.avatar{
+    width:28px;
+    height:28px;
+    border-radius:50%;
+    background:#6366f1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+}
+
+/* DROP */
+.drop-hover{
+    outline:2px dashed #22c55e;
+}
+
+</style>
+
+<h2>🔥 Smart Room Dashboard</h2>
+
+<div class="grid">
+
+{% for room in rooms %}
+
+{% if room.percent < 40 %}
+    {% with "heat-low" as heat %}
+{% elif room.percent < 80 %}
+    {% with "heat-mid" as heat %}
+{% else %}
+    {% with "heat-high" as heat %}
+{% endif %}
+
+<div class="card {{ heat }} {% if room.is_ac %}ac-room{% endif %}"
+     data-room-id="{{ room.id }}">
+
+    <div class="card-header">
+        <b>Room {{ room.number }}</b>
+        <span>{{ room.count }}/{{ room.capacity }}</span>
+    </div>
+
+    <div class="bar">
+        <div class="fill" style="width:{{ room.percent }}%"></div>
+    </div>
+
+    {% for s in room.students %}
+    <div class="student" draggable="true" data-id="{{ s.id }}">
+        <div class="avatar">{{ s.user.username|first }}</div>
+        <div>
+            {{ s.user.username }}<br>
+            <small>{{ s.course }} | Y{{ s.current_year }}</small>
+        </div>
+    </div>
+    {% empty %}
+        <small>No students</small>
+    {% endfor %}
+
+</div>
+
+{% endwith %}
+{% endfor %}
+
+</div>
+
+<script>
+
+let draggedStudentId = null;
+
+/* DRAG START */
+document.querySelectorAll(".student").forEach(s=>{
+    s.ondragstart = ()=>{
+        draggedStudentId = s.dataset.id;
+        s.classList.add("dragging");
+    };
+
+    s.ondragend = ()=>{
+        draggedStudentId = null;
+        s.classList.remove("dragging");
+    };
+});
+
+/* DROP LOGIC */
+document.querySelectorAll(".card").forEach(card=>{
+
+    card.ondragover = (e)=>{
+        e.preventDefault();
+        card.classList.add("drop-hover");
+    };
+
+    card.ondragleave = ()=>{
+        card.classList.remove("drop-hover");
+    };
+
+    card.ondrop = (e)=>{
+        e.preventDefault();
+
+        fetch("/shift-student/",{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/x-www-form-urlencoded",
+                "X-CSRFToken":getCookie("csrftoken")
+            },
+            body:`student_id=${draggedStudentId}&room_id=${card.dataset.roomId}`
+        })
+        .then(r=>r.json())
+        .then(res=>{
+            if(res.status==="success"){
+                location.reload();
+            } else {
+                alert(res.message);
+            }
+        });
+
+        card.classList.remove("drop-hover");
+    };
+
+});
+
+/* COOKIE */
+function getCookie(name){
+    return document.cookie.split('; ')
+    .find(row=>row.startsWith(name+"="))
+    ?.split('=')[1];
+}
+
+</script>
+
+{% endblock %}

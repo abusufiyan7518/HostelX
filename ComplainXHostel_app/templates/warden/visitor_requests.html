@@ -1,0 +1,549 @@
+{% extends 'warden/base.html' %}
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+/* ===================== NETFLIX BASE ===================== */
+body{
+    background:#050814;
+    color:#e5e7eb;
+    font-family:Inter, sans-serif;
+}
+
+/* cinematic background */
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(229,9,20,0.18), transparent 40%),
+        radial-gradient(circle at 85% 30%, rgba(99,102,241,0.18), transparent 45%),
+        radial-gradient(circle at 50% 80%, rgba(34,197,94,0.12), transparent 50%);
+    z-index:-1;
+}
+
+/* grid overlay */
+body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size:70px 70px;
+    opacity:0.06;
+    z-index:-1;
+}
+
+/* ===================== CONTAINER ===================== */
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:24px;
+}
+
+/* HEADER */
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.header h2{
+    font-size:26px;
+    font-weight:700;
+}
+
+.header p{
+    font-size:13px;
+    color:#94a3b8;
+}
+
+/* ===================== STATS (NETFLIX TILES) ===================== */
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+    margin:20px 0;
+}
+
+.stat-card{
+    padding:16px;
+    border-radius:16px;
+    background:rgba(17,24,39,0.65);
+    border:1px solid rgba(255,255,255,0.08);
+    text-align:center;
+    backdrop-filter:blur(12px);
+    transition:0.25s;
+    box-shadow:0 10px 30px rgba(0,0,0,0.4);
+}
+
+.stat-card:hover{
+    transform:translateY(-5px);
+    border-color:#e50914;
+}
+
+.stat-card h3{
+    margin:0;
+    font-size:22px;
+}
+
+.stat-card p{
+    margin:0;
+    font-size:12px;
+    color:#94a3b8;
+}
+
+.total{border-left:3px solid #6366f1;}
+.pending{border-left:3px solid #f59e0b;}
+.approved{border-left:3px solid #22c55e;}
+.rejected{border-left:3px solid #e50914;}
+
+/* ===================== CHARTS SECTION ===================== */
+.chart-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    margin-bottom:24px;
+}
+
+.chart-card{
+    background:rgba(17,24,39,0.65);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:18px;
+    padding:20px;
+    backdrop-filter:blur(14px);
+    min-height:260px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.3);
+}
+
+/* ===================== SEARCH ===================== */
+.search{
+    width:100%;
+    padding:12px 14px;
+    border-radius:12px;
+    background:#0f172a;
+    border:1px solid rgba(255,255,255,0.08);
+    color:white;
+    margin-bottom:14px;
+    outline:none;
+}
+
+.search:focus {
+    border-color:#e50914;
+    box-shadow:0 0 0 3px rgba(229,9,20,0.15);
+}
+
+/* ===================== TABS ===================== */
+.tabs{
+    display:flex;
+    gap:10px;
+    margin-bottom:16px;
+}
+
+.tab-btn{
+    padding:8px 14px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.08);
+    color:#cbd5e1;
+    cursor:pointer;
+    transition:0.2s;
+    font-size:13px;
+}
+
+.tab-btn.active{
+    background:linear-gradient(135deg,#e50914,#b91c1c);
+    color:white;
+}
+
+/* ===================== SECTIONS ===================== */
+.section{
+    display:none;
+}
+
+.section.active{
+    display:block;
+}
+
+/* ===================== GRID ===================== */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+    gap:14px;
+}
+
+/* ===================== CARD (NETFLIX TILE) ===================== */
+.card{
+    background:rgba(17,24,39,0.65);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:18px;
+    padding:16px;
+    transition:0.25s;
+    backdrop-filter:blur(14px);
+    box-shadow:0 10px 30px rgba(0,0,0,0.4);
+}
+
+.card:hover{
+    transform:translateY(-6px) scale(1.01);
+    border-color:#e50914;
+    box-shadow:0 25px 60px rgba(0,0,0,0.6);
+}
+
+/* TOP */
+.top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:10px;
+}
+
+/* BADGE */
+.badge{
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:600;
+}
+
+.pending-badge{
+    background:rgba(245,158,11,0.15);
+    color:#fbbf24;
+}
+
+.approved-badge{
+    background:rgba(34,197,94,0.15);
+    color:#22c55e;
+}
+
+.rejected-badge{
+    background:rgba(239,68,68,0.15);
+    color:#e50914;
+}
+
+/* TEXT */
+.card p{
+    font-size:13px;
+    color:#cbd5e1;
+    margin:6px 0;
+}
+
+/* META */
+.meta{
+    font-size:12px;
+    color:#94a3b8;
+    margin-top:8px;
+}
+
+/* ===================== ACTIONS ===================== */
+.actions{
+    display:flex;
+    gap:10px;
+    margin-top:12px;
+}
+
+.btn{
+    flex:1;
+    padding:8px;
+    border-radius:10px;
+    text-align:center;
+    font-size:12px;
+    color:white;
+    text-decoration:none;
+    transition:0.2s;
+    font-weight:600;
+}
+
+.btn:hover{
+    transform:translateY(-2px);
+}
+
+.approve{
+    background:linear-gradient(135deg,#22c55e,#16a34a);
+}
+
+.reject{
+    background:linear-gradient(135deg,#e50914,#b91c1c);
+}
+
+/* ===================== IMAGE ===================== */
+.id-proof{
+    margin-top:12px;
+}
+
+.id-proof img{
+    width:100%;
+    height:180px;
+    object-fit:cover;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,0.15);
+    transition:0.25s;
+}
+
+.id-proof img:hover{
+    transform:scale(1.03);
+    opacity:0.9;
+}
+
+/* EMPTY */
+.no-image{
+    padding:10px;
+    font-size:12px;
+    color:#64748b;
+    border:1px dashed rgba(255,255,255,0.2);
+    border-radius:12px;
+    text-align:center;
+    margin-top:10px;
+}
+
+@media(max-width:900px){
+    .stats, .chart-grid {
+        grid-template-columns:1fr;
+    }
+}
+
+</style>
+
+<div class="container">
+
+<div class="header">
+    <div>
+        <h2>👥 Visitor Request</h2>
+        <p>Visitor approval workflow HostelX system</p>
+    </div>
+</div>
+
+<div class="stats">
+    <div class="stat-card total">
+        <h3>{{ total }}</h3>
+        <p>Total</p>
+    </div>
+    <div class="stat-card pending">
+        <h3>{{ pending }}</h3>
+        <p>Pending</p>
+    </div>
+    <div class="stat-card approved">
+        <h3>{{ approved }}</h3>
+        <p>Approved</p>
+    </div>
+    <div class="stat-card rejected">
+        <h3>{{ rejected }}</h3>
+        <p>Rejected</p>
+    </div>
+</div>
+
+<div class="chart-grid">
+    <div class="chart-card">
+        <h4 style="color:#94a3b8; margin-bottom:14px; font-size:13px; font-weight: 500;">Visitor Status Summary</h4>
+        <div style="height:180px;">
+            <canvas id="visitorStatusChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="chart-card">
+        <h4 style="color:#94a3b8; margin-bottom:14px; font-size:13px; font-weight: 500;">Visitor Volume Breakdown</h4>
+        <div style="height:180px;">
+            <canvas id="visitorOverviewChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<input type="text" id="searchInput" class="search" placeholder="Search visitor by name or student...">
+
+<div class="tabs">
+    <button class="tab-btn active" onclick="showTab('pending', this)">Pending</button>
+    <button class="tab-btn" onclick="showTab('approved', this)">Approved</button>
+    <button class="tab-btn" onclick="showTab('rejected', this)">Rejected</button>
+</div>
+
+<div id="pending" class="section active">
+    <div class="grid">
+
+    {% for v in visitors %}
+    {% if v.status == "Pending" %}
+
+    <div class="card visitor">
+
+        <div class="top">
+            <b>{{ v.name }}</b>
+            <span class="badge pending-badge">Pending</span>
+        </div>
+
+        <p><b>Student:</b> {{ v.student.user.username }}</p>
+        <p><b>Room No:</b> {{ v.student.room.room_number|default:"Not Assigned" }}</p>
+        <p><b>Relation:</b> {{ v.relation|default:"-" }}</p>
+
+        <div class="meta">
+            📅 {{ v.created_at|date:"d M Y, h:i A" }}
+        </div>
+
+        {% if v.id_proof %}
+        <div class="id-proof">
+            <a href="{{ v.id_proof.url }}" target="_blank">
+                <img src="{{ v.id_proof.url }}" alt="ID Proof">
+            </a>
+        </div>
+        {% else %}
+        <div class="no-image">No ID proof uploaded</div>
+        {% endif %}
+
+        <div class="actions">
+            <a href="{% url 'approve_visitor' v.id %}" class="btn approve">Approve</a>
+            <a href="{% url 'reject_visitor' v.id %}" class="btn reject">Reject</a>
+        </div>
+
+    </div>
+
+    {% endif %}
+    {% endfor %}
+
+    </div>
+</div>
+
+<div id="approved" class="section">
+    <div class="grid">
+
+    {% for v in visitors %}
+    {% if v.status == "Approved" %}
+
+    <div class="card visitor">
+
+        <div class="top">
+            <b>{{ v.name }}</b>
+            <span class="badge approved-badge">Approved</span>
+        </div>
+
+        <p><b>Student:</b> {{ v.student.user.username }}</p>
+        <p><b>Room:</b> {{ v.student.room.room_number|default:"-" }}</p>
+        <p><b>Relation:</b> {{ v.relation|default:"-" }}</p>
+
+        <div class="meta">
+            Approved on {{ v.updated_at|date:"d M Y" }}
+        </div>
+
+    </div>
+
+    {% endif %}
+    {% endfor %}
+
+    </div>
+</div>
+
+<div id="rejected" class="section">
+    <div class="grid">
+
+    {% for v in visitors %}
+    {% if v.status == "Rejected" %}
+
+    <div class="card visitor">
+
+        <div class="top">
+            <b>{{ v.name }}</b>
+            <span class="badge rejected-badge">Rejected</span>
+        </div>
+
+        <p><b>Student:</b> {{ v.student.user.username }}</p>
+        <p><b>Room:</b> {{ v.student.room.room_number|default:"-" }}</p>
+        <p><b>Relation:</b> {{ v.relation|default:"-" }}</p>
+
+        <div class="meta">
+            Rejected request
+        </div>
+
+    </div>
+
+    {% endif %}
+    {% endfor %}
+
+    </div>
+</div>
+
+</div>
+
+<script>
+
+function showTab(tab, el){
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(tab).classList.add('active');
+
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+}
+
+document.getElementById("searchInput").addEventListener("input", function(){
+    let val = this.value.toLowerCase();
+
+    document.querySelectorAll(".visitor").forEach(card=>{
+        card.style.display = card.innerText.toLowerCase().includes(val) ? "block" : "none";
+    });
+});
+
+// Analytics Charts Integration
+document.addEventListener("DOMContentLoaded", function () {
+    // Chart 1 - Visitor Status Doughnut
+    const ctx1 = document.getElementById('visitorStatusChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'doughnut',
+        data: {
+            labels: ['Pending', 'Approved', 'Rejected'],
+            datasets: [{
+                data: ['{{ pending }}', '{{ approved }}', '{{ rejected }}'],
+                backgroundColor: ['#f59e0b', '#22c55e', '#e50914'],
+                borderColor: '#050814',
+                borderWidth: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#94a3b8', font: { family: 'Inter', size: 12 } }
+                }
+            }
+        }
+    });
+
+    // Chart 2 - Overview Bar Chart
+    const ctx2 = document.getElementById('visitorOverviewChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: ['Total', 'Pending', 'Approved', 'Rejected'],
+            datasets: [{
+                label: 'Statistics',
+                data: ['{{ total }}', '{{ pending }}', '{{ approved }}', '{{ rejected }}'],
+                backgroundColor: ['#6366f1', '#f59e0b', '#22c55e', '#e50914'],
+                borderColor: '#e5e7eb',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    ticks: { color: '#94a3b8' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#94a3b8' }
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+});
+
+</script>
+
+{% endblock %}

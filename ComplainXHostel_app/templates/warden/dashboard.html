@@ -1,0 +1,684 @@
+{% extends 'warden/base.html' %}
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+/* ================= NETFLIX BASE THEME ================= */
+body{
+    background:#050814;
+    color:#e5e7eb;
+    font-family:Inter, sans-serif;
+}
+
+/* cinematic glow background */
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(229,9,20,0.12), transparent 40%),
+        radial-gradient(circle at 80% 30%, rgba(99,102,241,0.18), transparent 45%),
+        radial-gradient(circle at 50% 80%, rgba(34,197,94,0.10), transparent 50%);
+    z-index:-1;
+}
+
+body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size:70px 70px;
+    opacity:0.06;
+    z-index:-1;
+}
+
+/* ================= PAGE ================= */
+.page{
+    padding:28px;
+    max-width:1400px;
+    margin:auto;
+    color:#e5e7eb;
+}
+
+/* HEADER */
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:22px;
+}
+
+.header h2{
+    font-size:26px;
+    font-weight:700;
+}
+
+/* KPI (NETFLIX TILES) */
+.kpi{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:14px;
+    margin-bottom:20px;
+}
+
+.card{
+    background:rgba(17,24,39,0.7);
+    padding:18px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,0.06);
+    backdrop-filter:blur(12px);
+    transition:0.25s;
+}
+
+.card:hover{
+    transform:translateY(-4px);
+    border-color:#e50914;
+}
+
+.card h3{
+    margin-top:6px;
+    font-size:24px;
+}
+
+/* CHARTS SECTION */
+.chart-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:16px;
+    margin-bottom:22px;
+}
+
+.chart-card{
+    background:rgba(17,24,39,0.65);
+    border:1px solid rgba(255,255,255,0.05);
+    padding:18px;
+    border-radius:16px;
+    backdrop-filter:blur(12px);
+    min-height:260px;
+}
+
+/* ROOMS */
+.section{
+    background:rgba(17,24,39,0.65);
+    padding:20px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,0.05);
+    backdrop-filter:blur(12px);
+}
+
+.floor-title{
+    margin:18px 0 10px;
+    font-size:12px;
+    color:#9ca3af;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+}
+
+.room-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(105px,1fr));
+    gap:12px;
+}
+
+/* ROOM */
+.room-card{
+    padding:12px;
+    border-radius:12px;
+    text-align:center;
+    cursor:pointer;
+    border:1px solid rgba(255,255,255,0.04);
+    transition:.25s;
+    position:relative;
+    background:#0f172a;
+}
+
+.room-card:hover{
+    transform:translateY(-4px);
+    border-color:#e50914;
+    box-shadow:0 10px 25px rgba(229,9,20,0.15);
+}
+
+.full{background:rgba(127,29,29,0.4); border-color:#7f1d1d;}
+.partial{background:rgba(120,53,15,0.4); border-color:#78350f;}
+.empty{background:rgba(6,78,59,0.4); border-color:#064e3b;}
+
+/* BAR */
+.bar{
+    height:4px;
+    background:#1e293b;
+    border-radius:10px;
+    margin-top:8px;
+    overflow:hidden;
+}
+
+.bar-fill{
+    height:100%;
+    background:#22c55e;
+}
+
+.full-bar{
+    background:#ef4444 !important;
+}
+
+/* DROP */
+.drop-hover{
+    outline:2px dashed #22c55e;
+    background:rgba(34,197,94,0.1) !important;
+}
+
+/* ================= OVERLAY FIX ================= */
+.overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.65);
+    opacity:0;
+    pointer-events:none;
+    transition:.25s;
+    z-index:999;
+}
+
+.overlay.show{
+    opacity:1;
+    pointer-events:auto;
+}
+
+/* ================= SIDE PANEL ================= */
+.side-panel{
+    position:fixed;
+    top:0;
+    right:-420px;
+    width:400px;
+    height:100%;
+    background:rgba(10,15,26,0.98);
+    border-left:1px solid rgba(255,255,255,0.08);
+    transition:.35s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index:1000;
+    display:flex;
+    flex-direction:column;
+    box-shadow:-10px 0 40px rgba(0,0,0,0.7);
+}
+
+.side-panel.open{
+    right:0;
+}
+
+.panel-header{
+    padding:18px;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.panel-title{
+    font-weight:600;
+}
+
+.close-btn{
+    cursor:pointer;
+    opacity:0.7;
+    transition:0.2s;
+}
+
+.close-btn:hover{
+    opacity:1;
+    color:#e50914;
+}
+
+.panel-body{
+    padding:18px;
+    overflow-y:auto;
+    flex:1;
+}
+
+/* ================= STUDENT CARD ================= */
+.student-card{
+    background:#0f172a;
+    border:1px solid rgba(255,255,255,0.05);
+    border-radius:12px;
+    padding:14px;
+    margin-bottom:12px;
+    display:flex;
+    gap:14px;
+    cursor:grab;
+    transition:.2s;
+}
+
+.student-card:hover{
+    transform:translateY(-2px);
+    border-color:#e50914;
+}
+
+.student-card.dragging{
+    opacity:0.4;
+}
+
+.avatar{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#e50914,#b91c1c);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:600;
+    color:white;
+}
+
+.info{
+    flex:1;
+}
+
+.name{
+    font-size:14px;
+    font-weight:600;
+    color:#f9fafb;
+}
+
+.meta{
+    font-size:11px;
+    color:#9ca3af;
+    margin-top:2px;
+}
+
+/* PROGRESS */
+.progress{
+    height:5px;
+    background:#1e293b;
+    border-radius:10px;
+    margin-top:8px;
+    overflow:hidden;
+}
+
+.progress-fill{
+    height:100%;
+    background:#22c55e;
+}
+
+.badge{
+    font-size:10px;
+    padding:3px 8px;
+    background:#1e293b;
+    border:1px solid rgba(255,255,255,0.05);
+    border-radius:6px;
+    display:inline-block;
+    margin-top:6px;
+}
+
+@media(max-width:1024px){
+    .chart-grid{
+        grid-template-columns:1fr;
+    }
+}
+</style>
+
+<div class="page">
+
+<div class="header">
+    <h2>🏢 Warden Dashboard</h2>
+</div>
+
+<div class="kpi">
+    <div class="card">Students <h3>{{ total_students|default:0 }}</h3></div>
+    <div class="card">Fees Collection <h3>₹{{ total_fee_collected|default:0 }}</h3></div>
+    {% comment %} <div class="card">Pending <h3 style="color:#f87171;">₹{{ total_pending_fee|default:0 }}</h3></div> {% endcomment %}
+    <div class="card">Occupancy <h3>{{ occupancy_rate|default:0 }}%</h3></div>
+</div>
+
+<div class="chart-grid">
+    <div class="chart-card">
+        <h4 style="color:#94a3b8; margin-bottom:10px; font-size:12px; font-weight: 500;">Complaints Overview</h4>
+        <div style="height:190px;">
+            <canvas id="complaintChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="chart-card">
+        <h4 style="color:#94a3b8; margin-bottom:10px; font-size:12px; font-weight: 500;">Fee Breakdown</h4>
+        <div style="height:190px;">
+            <canvas id="feeChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <h4 style="color:#94a3b8; margin-bottom:10px; font-size:12px; font-weight: 500;">Floor-wise Room Status</h4>
+        <div style="height:190px;">
+            <canvas id="floorChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+<h3>Room Allocation</h3>
+
+{% for floor in floors %}
+<div class="floor-title">Floor {{ floor.number }}</div>
+
+<div class="room-grid">
+
+{% for room in floor.rooms %}
+{% widthratio room.occupied room.capacity 100 as percent %}
+
+<div class="room-card
+    {% if room.occupied >= room.capacity %}full
+    {% elif room.occupied > 0 %}partial
+    {% else %}empty{% endif %}"
+    data-room-id="{{ room.id }}"
+    onclick="openRoom({{ room.id }})"
+>
+
+<strong>{{ room.room_number }}</strong>
+
+<div style="font-size:11px; color:#94a3b8;">
+{{ room.occupied }}/{{ room.capacity }}
+</div>
+
+<div class="bar">
+    <div class="bar-fill {% if room.occupied >= room.capacity %}full-bar{% endif %}"
+         style="width:{{ percent }}%"></div>
+</div>
+
+</div>
+{% endfor %}
+
+</div>
+{% endfor %}
+
+</div>
+
+</div>
+
+<div id="overlay" class="overlay" onclick="closePanel()"></div>
+
+<div id="sidePanel" class="side-panel">
+    <div class="panel-header">
+        <div class="panel-title">Room Details</div>
+        <div class="close-btn" onclick="closePanel()">✕</div>
+    </div>
+
+    <div id="roomData" class="panel-body"></div>
+</div>
+
+<script>
+let draggedStudentId = null;
+
+/* ================= CLICK HANDLER ================= */
+document.addEventListener("click", function(e){
+    const roomCard = e.target.closest(".room-card");
+    if(roomCard){
+        openRoom(roomCard.dataset.roomId);
+    }
+});
+
+/* ================= OPEN PANEL ================= */
+function openRoom(id){
+    document.getElementById("sidePanel").classList.add("open");
+    document.getElementById("overlay").classList.add("show");
+    document.getElementById("roomData").innerHTML = "Loading...";
+
+    fetch(`/room-details/${id}/`)
+    .then(res => res.json())
+    .then(data => {
+        let html = "";
+
+        if(!data.students || data.students.length === 0){
+            html = "<p style='color:#9ca3af;'>No students found</p>";
+        } else {
+            data.students.forEach(s => {
+                let name = s.name || "Unknown";
+                let initial = name.charAt(0).toUpperCase();
+                let paid = s.paid || 0;
+                let due = s.due || 0;
+                let percent = (paid + due) > 0 ? (paid / (paid + due)) * 100 : 0;
+
+                let avatarHTML = s.profile_pic
+                    ? `<img src="${s.profile_pic}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">`
+                    : `<div class="avatar">${initial}</div>`;
+
+                html += `
+                <div class="student-card" data-id="${s.id}" draggable="true">
+                    ${avatarHTML}
+                    <div class="info">
+                        <div class="name">${name} : ${s.room || "-"}</div>
+                        <div class="meta">${s.course || "-"} • Year ${s.year || "-"}</div>
+                        <div class="meta">📞 ${s.contact || "N/A"}</div>
+                        <div class="badge">₹${paid} Paid | ₹${due} Due</div>
+                        <div class="progress">
+                            <div class="progress-fill" style="width:${percent}%"></div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+        }
+        document.getElementById("roomData").innerHTML = html;
+        bindDrag();
+    });
+}
+
+/* ================= CLOSE PANEL ================= */
+function closePanel(){
+    document.getElementById("sidePanel").classList.remove("open");
+    document.getElementById("overlay").classList.remove("show");
+}
+
+/* ================= BIND DRAG ================= */
+function bindDrag(){
+    document.querySelectorAll(".student-card").forEach(card => {
+        card.ondragstart = () => {
+            draggedStudentId = card.dataset.id;
+            card.classList.add("dragging");
+        };
+        card.ondragend = () => {
+            draggedStudentId = null;
+            card.classList.remove("dragging");
+        };
+    });
+
+    document.querySelectorAll(".room-card").forEach(room => {
+        room.ondragover = (e) => {
+            e.preventDefault();
+            room.classList.add("drop-hover");
+        };
+        room.ondragleave = () => {
+            room.classList.remove("drop-hover");
+        };
+        room.ondrop = (e) => {
+            e.preventDefault();
+            room.classList.remove("drop-hover");
+
+            if(!draggedStudentId) return;
+
+            fetch("/shift-student/",{
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/x-www-form-urlencoded",
+                    "X-CSRFToken":getCookie("csrftoken")
+                },
+                body: `student_id=${draggedStudentId}&room_id=${room.dataset.roomId}`
+            })
+            .then(r => r.json())
+            .then(res => {
+                if(res.status === "success"){
+                    location.reload();
+                } else {
+                    alert("Shift operation failed");
+                }
+            });
+        };
+    });
+}
+
+// Drag/Drop overlay fix
+document.addEventListener("dragstart", () => {
+    const overlay = document.getElementById("overlay");
+    if (overlay) overlay.style.pointerEvents = "none";
+});
+document.addEventListener("dragend", () => {
+    const overlay = document.getElementById("overlay");
+    if (overlay) overlay.style.pointerEvents = "auto";
+});
+
+function getCookie(name){
+    let cookieValue = null;
+    if(document.cookie && document.cookie !== ''){
+        document.cookie.split(';').forEach(cookie => {
+            cookie = cookie.trim();
+            if(cookie.startsWith(name + '=')){
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            }
+        });
+    }
+    return cookieValue;
+}
+
+/* ================= ANALYTICS CHART INITIALIZATION ================= */
+document.addEventListener("DOMContentLoaded", function () {
+    try {
+        const categories = JSON.parse('{{ categories|escapejs|default:"[]" }}');
+        const categoryCounts = JSON.parse('{{ category_counts|escapejs|default:"[]" }}');
+
+        const colors = [
+            "#e50914","#4f46e5","#22c55e","#fbbf24",
+            "#8b5cf6","#ec4899","#14b8a6","#f97316",
+            "#10b981","#f43f5e","#06b6d4"
+        ];
+
+        // Chart 1 - Bar Chart (Complaints)
+        new Chart(document.getElementById("complaintChart"), {
+            type: "bar",
+            data: {
+                labels: categories.length ? categories : ["No Data"],
+                datasets: [{
+                    label: "Complaints",
+                    data: categoryCounts.length ? categoryCounts : [0],
+                    backgroundColor: categories.map((_, i) => colors[i % colors.length]),
+                    borderRadius: 6,
+                    barThickness: 22
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: "#9ca3af", font: { size: 10 } }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: "rgba(255,255,255,0.03)" },
+                        ticks: { color: "#9ca3af", font: { size: 10 } }
+                    }
+                }
+            }
+        });
+
+        // Chart 2 - Pie Chart (Fee Breakdown)
+        new Chart(document.getElementById("feeChart"), {
+            type: "pie",
+            data: {
+                labels: ["Collected", "Pending"],
+                datasets: [{
+                    data: [{{ total_fee_collected|default:0 }}, {{ total_pending|default:0 }}],
+                    backgroundColor: ["#22c55e", "#ef4444"],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: "#e5e7eb", font: { size: 11 } } }
+                }
+            }
+        });
+
+        // Chart 3 - Floor-wise Room Status Chart
+        function getFloorWiseRoomData() {
+            const floors = document.querySelectorAll('.floor-title');
+            let labels = [];
+            let fullData = [];
+            let partialData = [];
+            let emptyData = [];
+
+            if (floors.length > 0) {
+                floors.forEach((floorElem) => {
+                    labels.push(floorElem.innerText.trim());
+                    let nextGrid = floorElem.nextElementSibling;
+                    if (nextGrid && nextGrid.classList.contains('room-grid')) {
+                        fullData.push(nextGrid.querySelectorAll('.full').length);
+                        partialData.push(nextGrid.querySelectorAll('.partial').length);
+                        emptyData.push(nextGrid.querySelectorAll('.empty').length);
+                    }
+                });
+            } else {
+                // Fallback / Placeholder for context
+                labels = ["Floor 1", "Floor 2"];
+                fullData = [2, 0];
+                partialData = [1, 3];
+                emptyData = [2, 1];
+            }
+
+            return { labels, fullData, partialData, emptyData };
+        }
+
+        const floorData = getFloorWiseRoomData();
+        new Chart(document.getElementById("floorChart"), {
+            type: "bar",
+            data: {
+                labels: floorData.labels,
+                datasets: [
+                    {
+                        label: "Full Rooms",
+                        data: floorData.fullData,
+                        backgroundColor: "#ef4444",
+                        borderRadius: 4,
+                        barThickness: 18
+                    },
+                    {
+                        label: "Partial Rooms",
+                        data: floorData.partialData,
+                        backgroundColor: "#f59e0b",
+                        borderRadius: 4,
+                        barThickness: 18
+                    },
+                    {
+                        label: "Empty Rooms",
+                        data: floorData.emptyData,
+                        backgroundColor: "#10b981",
+                        borderRadius: 4,
+                        barThickness: 18
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: "#9ca3af", font: { size: 10 } }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: "rgba(255,255,255,0.03)" },
+                        ticks: { color: "#9ca3af", font: { size: 10 } }
+                    }
+                },
+                plugins: {
+                    legend: { labels: { color: "#e5e7eb", font: { size: 10 } } }
+                }
+            }
+        });
+
+    } catch (e) {
+        console.warn("Chart data initialization failed:", e);
+    }
+});
+</script>
+
+{% endblock %}
