@@ -1,5 +1,3 @@
-# settings.py (Production Ready for Render)
-
 from pathlib import Path
 import os
 
@@ -7,13 +5,13 @@ BASE_DIR = Path(**file**).resolve().parent.parent
 
 # ========================
 
-# SECURITY SETTINGS
+# SECURITY
 
 # ========================
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-dev-key')
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ['.onrender.com', '127.0.0.1', 'localhost']
 
@@ -47,7 +45,7 @@ MIDDLEWARE = [
 'django.middleware.security.SecurityMiddleware',
 
 ```
-# WhiteNoise (for static files in production)
+# Static files serving (important for Render)
 'whitenoise.middleware.WhiteNoiseMiddleware',
 
 'django.contrib.sessions.middleware.SessionMiddleware',
@@ -118,9 +116,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # ========================
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'Asia/Kolkata'
-
 USE_I18N = True
 USE_TZ = True
 
@@ -151,7 +147,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # ========================
 
-# AUTH SETTINGS
+# AUTH
 
 # ========================
 
@@ -169,12 +165,12 @@ X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 # ========================
 
-# RAZORPAY (MOVE TO ENV IN FUTURE)
+# RAZORPAY (ENV BASED)
 
 # ========================
 
-RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'test_key')
-RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'test_secret')
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET')
 
 # ========================
 
