@@ -6,6 +6,7 @@ psycopg2-binary==2.9.12
 
 Pillow>=10.0.0
 razorpay==2.0.1
+reportlab==4.5.0
 
 channels==4.3.2
 asgiref==3.11.1
