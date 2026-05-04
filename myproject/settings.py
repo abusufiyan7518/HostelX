@@ -28,10 +28,8 @@ INSTALLED_APPS = [
 'django.contrib.sessions',
 'django.contrib.messages',
 'django.contrib.staticfiles',
-
-```
 'ComplainXHostel_app',
-```
+
 
 ]
 
@@ -44,7 +42,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
 'django.middleware.security.SecurityMiddleware',
 
-```
+
 # Static files serving (important for Render)
 'whitenoise.middleware.WhiteNoiseMiddleware',
 
@@ -54,7 +52,7 @@ MIDDLEWARE = [
 'django.contrib.auth.middleware.AuthenticationMiddleware',
 'django.contrib.messages.middleware.MessageMiddleware',
 'django.middleware.clickjacking.XFrameOptionsMiddleware',
-```
+
 
 ]
 
