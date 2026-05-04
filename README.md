@@ -4,6 +4,46 @@ HostelX is a modern **Django-based web application** built to streamline hostel 
 It provides dedicated dashboards for **students and wardens**, enabling efficient management of rooms, complaints, fees, and daily activities.
 
 ---
+## 🔐 Role-Based Access Control
+
+The system implements role-based access to ensure secure and structured data visibility:
+
+- 👮 **Warden Access Control**
+  - Male wardens can view and manage **male students only**
+  - Female wardens can view and manage **female students only**
+
+- 🎯 **Data Segregation**
+  - Student data is filtered based on assigned hostel wings (Boys/Girls)
+  - Prevents unauthorized access across different hostel sections
+
+- 🛡 **Security & Integrity**
+  - Ensures privacy and controlled data handling
+  - Reduces risk of cross-access or data leakage
+  
+
+## 🔑 Demo Login
+
+* Student: Boy
+* Email: abusufiyantechsak@gmail.com
+* Password: 1234
+
+or
+
+* Student: Girl
+* Email: dishapatani@gmail.com
+* Password: 1234
+
+
+* Warden: male_warden  
+* Email: male_warden@hostel.com
+* Password: male@1234
+
+or
+
+* Warden: female_warden
+* Email: female_warden@hostel.com
+* Password: female@1234
+
 
 ## 🚀 Features
 
@@ -106,28 +146,6 @@ python manage.py runserver
 
 ---
 
-## 🔑 Demo Login
-
-Student: Boy
-Email: abusufiyantechsak@gmail.com
-Password: 1234
-
-or
-
-Student: Girl
-Email: dishapatani@gmail.com
-Password: 1234
-
-
-Warden: male_warden  
-Email: male_warden@hostel.com
-Password: male@1234
-
-or
-
-Warden: female_warden
-Email: female_warden@hostel.com
-Password: female@1234
 
 ## 🚀 Future Improvements
 
