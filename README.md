@@ -106,6 +106,29 @@ python manage.py runserver
 
 ---
 
+## 🔑 Demo Login
+
+Student: Boy
+Email: abusufiyantechsak@gmail.com
+Password: 1234
+
+or
+
+Student: Girl
+Email: dishapatani@gmail.com
+Password: 1234
+
+
+Warden: male_warden  
+Email: male_warden@hostel.com
+Password: male@1234
+
+or
+
+Warden: female_warden
+Email: female_warden@hostel.com
+Password: female@1234
+
 ## 🚀 Future Improvements
 
 * 💳 Payment Gateway Integration
