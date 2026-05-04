@@ -19,26 +19,27 @@ The system implements role-based access to ensure secure and structured data vis
 - 🛡 **Security & Integrity**
   - Ensures privacy and controlled data handling
   - Reduces risk of cross-access or data leakage
-  
 
-## 🔑 Demo Login
 
+## 🔑 Demo Login  ##
+
+ ## Student Login 
 * Student: Boy
 * Email: abusufiyantechsak@gmail.com
 * Password: 1234
 
-or
+OR 
 
 * Student: Girl
 * Email: dishapatani@gmail.com
 * Password: 1234
 
-
+## Warden Login --
 * Warden: male_warden  
 * Email: male_warden@hostel.com
 * Password: male@1234
 
-or
+OR
 
 * Warden: female_warden
 * Email: female_warden@hostel.com
