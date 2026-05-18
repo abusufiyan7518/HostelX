@@ -1,54 +1,104 @@
 # 🏨 HostelX – Smart Hostel Management System
 
-HostelX is a modern **Django-based web application** built to streamline hostel operations.
-It provides dedicated dashboards for **students and wardens**, enabling efficient management of rooms, complaints, fees, and daily activities.
+HostelX is a modern Django-based hostel management platform designed to simplify and automate hostel operations.
+
+The system provides dedicated dashboards for students and wardens, enabling efficient handling of complaints, room allocation, leave requests, and hostel administration through a structured workflow system.
 
 ---
-## 🔐 Role-Based Access Control
 
-The system implements role-based access to ensure secure and structured data visibility:
+# 🚀 Key Highlights
 
-- 👮 **Warden Access Control**
-  - Male wardens can view and manage **male students only**
-  - Female wardens can view and manage **female students only**
+* Role-Based Access Control
+* ERP-Inspired Workflow System
+* Complaint & Leave Management
+* Student & Warden Dashboards
+* Secure Authentication System
+* Room Allocation & Transfer Handling
+* CRUD Operations & Data Management
+* Responsive User Interface
 
-- 🎯 **Data Segregation**
-  - Student data is filtered based on assigned hostel wings (Boys/Girls)
-  - Prevents unauthorized access across different hostel sections
+---
 
-- 🛡 **Security & Integrity**
-  - Ensures privacy and controlled data handling
-  - Reduces risk of cross-access or data leakage
+# 🔐 Role-Based Access Control
 
+HostelX implements structured access control to ensure privacy and secure data management.
 
-## 🔑 Demo Login  ##
+## 👮 Warden Access Rules
 
- ## Student Login 
-* Student: Boy
-* Email: abusufiyantechsak@gmail.com
-* Password: 1234
+* Male wardens can manage male students only
+* Female wardens can manage female students only
 
-OR 
+## 🎯 Data Segregation
 
-* Student: Girl
-* Email: shraddha@gmail.com
-* Password: 1234
+* Student records are filtered according to hostel wings
+* Prevents unauthorized cross-access between hostel sections
 
-## Warden Login --
-* Warden: male_warden  
-* Email: male_warden@hostel.com
-* Password: male@1234
+## 🛡 Security & Integrity
 
-OR
+* Controlled dashboard access
+* Secure authentication workflow
+* Structured data visibility and handling
 
-* Warden: female_warden
-* Email: female_warden@hostel.com
-* Password: female@1234
+---
 
+# 🧩 System Workflow
 
-## 🚀 Features
+## 👨‍🎓 Student Workflow
 
-### 👨‍🎓 Student Panel
+1. Student Registration & Login
+2. Dashboard Access
+3. Complaint Submission
+4. Leave Application
+5. Room & Roommate Details
+6. Complaint Tracking & Updates
+
+## 👨‍💼 Warden Workflow
+
+1. Secure Warden Login
+2. Student Monitoring
+3. Complaint Resolution
+4. Leave Approval / Rejection
+5. Room Transfer Management
+6. Hostel Activity Monitoring
+
+---
+
+# 🏗 System Architecture
+
+The application follows Django's MVT (Model-View-Template) architecture:
+
+* **Models** → Database structure and relationships
+* **Views** → Business logic and request handling
+* **Templates** → Frontend UI rendering
+
+The project uses:
+
+* Authentication & Session Management
+* Role-Based Access Logic
+* Database Operations (CRUD)
+* Structured URL Routing
+* Dynamic Dashboard Rendering
+
+---
+
+# 🗄 Database Design
+
+The system manages multiple entities including:
+
+* Students
+* Wardens
+* Complaints
+* Leave Applications
+* Room Allocation
+* Visitor Requests
+
+SQLite is currently used for development purposes, with future scalability support for MySQL/MariaDB integration.
+
+---
+
+# 🚀 Features
+
+## 👨‍🎓 Student Panel
 
 * Student Registration & Login
 * Dashboard Overview
@@ -57,7 +107,7 @@ OR
 * Leave Application System
 * Fee Management
 
-### 👨‍💼 Warden Panel
+## 👨‍💼 Warden Panel
 
 * Secure Warden Login
 * Student Management
@@ -68,18 +118,22 @@ OR
 
 ---
 
-## 🛠 Tech Stack
+# 🛠 Tech Stack
 
-* **Backend:** Django (Python)
-* **Frontend:** HTML, CSS, JavaScript
-* **Database:** SQLite
-* **Version Control:** Git & GitHub
+| Technology   | Usage                 |
+| ------------ | --------------------- |
+| Python       | Backend Logic         |
+| Django       | Web Framework         |
+| HTML/CSS     | Frontend UI           |
+| JavaScript   | Dynamic Functionality |
+| SQLite       | Database              |
+| Git & GitHub | Version Control       |
 
 ---
 
-## 📸 Screenshots
+# 📸 Screenshots
 
-### 🔐 Authentication
+## 🔐 Authentication Module
 
 ![Role Preview](ComplainXHostel_app/static/images/screenshots/auth/role.jpeg)
 ![Student Login](ComplainXHostel_app/static/images/screenshots/auth/student-login.jpeg)
@@ -88,7 +142,7 @@ OR
 
 ---
 
-### 🎓 Student Panel
+## 🎓 Student Dashboard
 
 ![Dashboard](ComplainXHostel_app/static/images/screenshots/student/student-dashboard.jpg)
 ![Roommate](ComplainXHostel_app/static/images/screenshots/student/roommate-details.jpg)
@@ -97,7 +151,7 @@ OR
 
 ---
 
-### 🛠 Warden Panel
+## 🛠 Warden Dashboard
 
 ![Warden Dashboard](ComplainXHostel_app/static/images/screenshots/warden/warden-dashboard.jpg)
 ![Students](ComplainXHostel_app/static/images/screenshots/warden/student-management.jpg)
@@ -105,68 +159,75 @@ OR
 
 ---
 
-## 📂 Project Structure
+# 📂 Project Structure
 
-```
+```bash
 HostelX/
-├── myproject/                # Django settings & configuration
-├── ComplainXHostel_app/     # Main application
+│
+├── myproject/                     # Django settings & configuration
+├── ComplainXHostel_app/          # Main application
 │   ├── templates/
 │   ├── static/
 │   │   └── images/screenshots/
-├── media/                   # Uploaded files
+│
+├── media/                        # Uploaded media files
 ├── manage.py
 ├── requirements.txt
 ├── README.md
-├── .gitignore
+└── .gitignore
 ```
 
 ---
 
-## ⚙️ Installation & Setup
+# ⚙️ Installation & Setup
 
 ```bash
+# Clone Repository
 git clone https://github.com/your-username/HostelX.git
+
+# Open Project
 cd HostelX
 
-# Create virtual environment
+# Create Virtual Environment
 python -m venv myenv
 
-# Activate (Windows)
+# Activate Environment (Windows)
 myenv\Scripts\activate
 
-# Install dependencies
+# Install Dependencies
 pip install -r requirements.txt
 
-# Apply migrations
+# Apply Migrations
 python manage.py migrate
 
-# Run server
+# Run Development Server
 python manage.py runserver
 ```
 
 ---
 
-
-## 🚀 Future Improvements
+# 🔮 Future Improvements
 
 * 💳 Payment Gateway Integration
 * 📧 Email Notifications
-* 📊 Admin Analytics Dashboard
+* 📊 Advanced Admin Analytics Dashboard
 * 📱 Improved Mobile Responsiveness
+* 🌐 REST API Integration
+* 🗃 MySQL/MariaDB Migration Support
 
 ---
 
-## 👨‍💻 Author
+# 👨‍💻 Author
 
-**Abusufiyan**
-Aspiring Python Developer
+## Abusufiyan
+
+Aspiring Python & Frappe Developer
 
 * GitHub: https://github.com/abusufiyan7518
 * LinkedIn: https://www.linkedin.com/in/abu-sufiyan-822b9827b/
 
 ---
 
-## ⭐ Support
+# ⭐ Support
 
-If you found this project helpful, consider giving it a ⭐ on GitHub!
+If you found this project useful, consider giving it a ⭐ on GitHub.
