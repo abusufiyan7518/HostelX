@@ -31,7 +31,7 @@ The system implements role-based access to ensure secure and structured data vis
 OR 
 
 * Student: Girl
-* Email: dishapatani@gmail.com
+* Email: shraddha@gmail.com
 * Password: 1234
 
 ## Warden Login --
