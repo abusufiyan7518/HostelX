@@ -94,26 +94,59 @@ OR
 
 ### 🔐 Authentication
 
+### 🔐 Role Page
+
 ![Role Preview](ComplainXHostel_app/static/images/screenshots/auth/role.jpeg)
+
+### 🔐 Student Login
+
 ![Student Login](ComplainXHostel_app/static/images/screenshots/auth/student-login.jpeg)
+
+### 🔐 Student Register
+
 ![Student Register](ComplainXHostel_app/static/images/screenshots/auth/student-register.jpeg)
+
+### 🔐 Warden Login
+
 ![Warden Login](ComplainXHostel_app/static/images/screenshots/auth/warden-login.jpeg)
 
 ---
 
 ### 🎓 Student Panel
 
+### 🔐 Student Dasbboard
+
 ![Dashboard](ComplainXHostel_app/static/images/screenshots/student/student-dashboard.jpg)
+
+### 🔐 Roomate Details
+
 ![Roommate](ComplainXHostel_app/static/images/screenshots/student/roommate-details.jpg)
+
+### 🔐 Raise Complaint 
+
 ![Complaint](ComplainXHostel_app/static/images/screenshots/student/raise-complaint.jpg)
+
+### 🔐 Apply Leave
+
 ![Leave](ComplainXHostel_app/static/images/screenshots/student/leave-application.jpg)
 
 ---
 
 ### 🛠 Warden Panel
 
+
+### 🔐 Warden Dashboard
+
 ![Warden Dashboard](ComplainXHostel_app/static/images/screenshots/warden/warden-dashboard.jpg)
+
+
+### 🔐 Students Details
+
 ![Students](ComplainXHostel_app/static/images/screenshots/warden/student-management.jpg)
+
+
+### 🔐 Complaint Management
+
 ![Complaints](ComplainXHostel_app/static/images/screenshots/warden/complaint-management.jpg)
 
 ---
