@@ -199,15 +199,15 @@ python manage.py runserver
 
 ---
 
-🚀 Future Improvements
+## 🚀 Future Improvements
 
-💳 Integration of secure payment gateway for seamless online transactions
-📧 Automated email notifications for updates, reminders, and alerts
-📊 Advanced analytics dashboard for better insights and reporting
-📱 Mobile application support for Android and iOS platforms
-🤖 AI-based prediction system to improve decision-making and automation
+* 💳 Payment Gateway Integration
+* 📧 Email Notifications
+* 📊 Advanced Analytics Dashboard
+* 📱 Mobile App Support
+* 🤖 AI-based predictions
+
 ---
-
 
 ## 👨‍💻 Author
 
