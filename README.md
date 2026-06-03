@@ -21,7 +21,9 @@ The system implements role-based access to ensure secure and structured data vis
   - Reduces risk of cross-access or data leakage
 
 
-## 🔑 Demo Login  ##
+## 🔑 Demo Credentials
+
+> You can configure these locally after setup
 
  ## Student Login 
 * Student: Boy
@@ -44,6 +46,17 @@ OR
 * Warden: female_warden
 * Email: female_warden@hostel.com
 * Password: female@1234
+
+## ✨ Highlights
+
+- Role-Based Access Control
+- Student & Warden Dashboards
+- Complaint Management System
+- Leave Management
+- Visitor Request Handling
+- Room Allocation & Roommate Details
+- Secure Authentication
+- Responsive User Interface
 
 
 ## 🚀 Features
@@ -147,23 +160,30 @@ python manage.py runserver
 
 ---
 
+🚀 Live Demo
 
-## 🚀 Future Improvements
+🔗 Live Project: https://x.com/abusufiyan1902
 
-* 💳 Payment Gateway Integration
-* 📧 Email Notifications
-* 📊 Admin Analytics Dashboard
-* 📱 Improved Mobile Responsiveness
 
+🚀 Future Improvements
+
+💳 Integration of secure payment gateway for seamless online transactions
+📧 Automated email notifications for updates, reminders, and alerts
+📊 Advanced analytics dashboard for better insights and reporting
+📱 Mobile application support for Android and iOS platforms
+🤖 AI-based prediction system to improve decision-making and automation
 ---
+
 
 ## 👨‍💻 Author
 
 **Abusufiyan**
-Aspiring Python Developer
 
-* GitHub: https://github.com/abusufiyan7518
-* LinkedIn: https://www.linkedin.com/in/abu-sufiyan-822b9827b/
+MCA Graduate | Python Developer | Django Developer | Full Stack Developer
+
+- GitHub: https://github.com/abusufiyan7518
+- LinkedIn: https://www.linkedin.com/in/abu-sufiyan-822b9827b/
+- Email: abusufiyantechsak@gmail.com
 
 ---
 
