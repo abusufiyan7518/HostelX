@@ -195,8 +195,9 @@ python manage.py runserver
 
 🚀 Live Demo
 
-🔗 Live Project: https://x.com/abusufiyan1902
+🔗 Live Project: https://hostelx.onrender.com/
 
+---
 
 🚀 Future Improvements
 
